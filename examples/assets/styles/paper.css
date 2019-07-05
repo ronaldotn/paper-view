@@ -1,0 +1,127 @@
+@page {
+  size: letter;
+  margin: 25mm 25mm;
+  @footnote {
+    margin: 0.6em 0 0 0;
+    padding: 0.3em 0 0 0;
+    max-height: 10em;
+  }
+
+  @top-center {
+    vertical-align: bottom;
+    padding-bottom: 10mm;
+    content: string(booktitle);
+  }
+}
+
+@font-face {
+  font-family: 'Arial';
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Arial';
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family:'Arial';
+  font-weight: normal;
+  font-style: italic;
+}
+
+@font-face {
+  font-family:'Arial';
+  font-weight: bold;
+  font-style: italic;
+}
+
+:root {
+  --color-mbox : rgba(0,0,0,0.2);
+  --margin: 4px;
+  --font-size: 16px;
+}
+
+.paper_view_content_root {
+  margin: 0;
+  overflow: auto;
+  height: auto;
+  text-align: initial;
+}
+
+.paper_view_content_root [contenteditable]:focus {
+  outline: 0px solid transparent;
+}
+
+.paper_view_content_root #controls {
+  display: none;
+}
+
+.paper_view_content_root .pagedjs_page {
+  font-size: var(--font-size);
+  margin: 0;
+  overflow: hidden;
+  position: relative;
+  box-sizing: border-box;
+  page-break-after: always;
+}
+
+@media screen {
+  .paper_view_content_root {
+    background-color: lightgrey;
+  }
+
+  .paper_view_content_root .pagedjs_page {
+    background: white;
+    box-shadow: 0 .5mm 2mm rgba(0,0,0,.3);
+    margin: 5mm auto;
+  }
+
+  .paper_view_content_root .pagedjs_pages {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    transform-origin: 0 0;
+    margin: 0 auto;
+  }
+
+  .paper_view_content_root #controls {
+    margin: 20px 0;
+    text-align: center;
+    display: block;
+  }
+
+  .paper_view_content_root .pagedjs_first_page {
+    /*margin-left: calc(50% + var(--margin));*/
+  }
+}
+
+@media screen {
+  .debug .pagedjs_margin-top .pagedjs_margin-top-left-corner,
+  .debug .pagedjs_margin-top .pagedjs_margin-top-right-corner {
+    box-shadow: 0 0 0 1px inset var(--color-mbox);
+  }
+
+  .debug .pagedjs_margin-top > div {
+    box-shadow: 0 0 0 1px inset var(--color-mbox);
+  }
+
+  .debug .pagedjs_margin-right > div {
+    box-shadow: 0 0 0 1px inset var(--color-mbox);
+  }
+
+  .debug .pagedjs_margin-bottom .pagedjs_margin-bottom-left-corner,
+  .debug .pagedjs_margin-bottom .pagedjs_margin-bottom-right-corner {
+    box-shadow: 0 0 0 1px inset var(--color-mbox);
+  }
+
+  .debug .pagedjs_margin-bottom > div {
+    box-shadow: 0 0 0 1px inset var(--color-mbox);
+  }
+
+  .debug .pagedjs_margin-left > div {
+    box-shadow: 0 0 0 1px inset var(--color-mbox);
+  }
+}
