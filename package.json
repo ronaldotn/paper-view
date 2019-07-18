@@ -1,0 +1,79 @@
+{
+  "name": "paper-view",
+  "version": "0.0.1",
+  "description": "Chunks up a document into paged media flows and applies print styles",
+  "author": "Ronald Quenta",
+  "license": "MIT",
+  "homepage": "https://pagedmedia.org",
+  "keywords": [
+    "paper",
+    "view",
+    "angular",
+    "AngularJS",
+    "Vue",
+    "VueJS",
+    "Vue2",
+    "vue.js",
+    "vue-paper",
+    "angular-paper"
+  ],
+  "main": "lib/index.js",
+  "moduleSrc": "src/index.js",
+  "browser": "dist/paperview.js",
+  "bugs": {
+    "url": "https://github.com/ronaldotn/paper-view/issues"
+  },
+  "dependencies": {
+    "@babel/polyfill": "^7.4.4",
+    "@babel/runtime": "^7.4.4",
+    "css-tree": "1.0.0-alpha.29",
+    "event-emitter": "^0.3.5",
+    "lodash": "^4.17.11"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.4.4",
+    "@babel/core": "^7.4.4",
+    "@babel/plugin-proposal-async-generator-functions": "^7.2.0",
+    "@babel/plugin-transform-runtime": "^7.4.4",
+    "@babel/preset-env": "^7.4.4",
+    "babel-core": "^7.0.0-bridge.0",
+    "babel-jest": "^24.7.1",
+    "chalk": "^2.4.2",
+    "eslint": "^5.16.0",
+    "express": "^4.16.4",
+    "jest": "^24.7.1",
+    "jest-image-snapshot": "^2.8.1",
+    "puppeteer": "^1.15.0",
+    "rimraf": "^2.6.3",
+    "rollup": "^1.10.1",
+    "rollup-plugin-babel-minify": "^9.0.0",
+    "rollup-plugin-commonjs": "^9.3.4",
+    "rollup-plugin-copy": "^3.0.0",
+    "rollup-plugin-json": "^4.0.0",
+    "rollup-plugin-livereload": "^1.0.0",
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "rollup-plugin-node-resolve": "^4.2.3",
+    "rollup-plugin-serve": "^1.0.1"
+  },
+  "scripts": {
+    "build": "./node_modules/.bin/rollup -c",
+    "legacy": "./node_modules/.bin/rollup -c rollup.legacy.config.js",
+    "start": "./node_modules/.bin/rollup -w -c rollup.server.config.js",
+    "test": "npm run tests && npm run specs",
+    "tests": "jest --config=tests/jest.config.js",
+    "specs": "jest --config=specs/jest.config.js",
+    "compile": "./node_modules/.bin/babel src/ -d lib/",
+    "pretest": "npm run build",
+    "prepublishOnly": "npm run build && npm run compile && npm run legacy",
+    "watch": "./node_modules/.bin/rollup -w -c",
+    "lint": "./node_modules/.bin/eslint -c .eslintrc.js src; exit 0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ronaldotn/paper-view.git"
+  },
+  "files": [
+    "dist",
+    "lib"
+  ]
+}
