@@ -4,7 +4,7 @@
   "description": "Chunks up a document into paged media flows and applies print styles",
   "author": "Ronald Quenta",
   "license": "MIT",
-  "homepage": "https://pagedmedia.org",
+  "homepage": "https://github.com/ronaldotn/paper-view",
   "keywords": [
     "paper",
     "view",
