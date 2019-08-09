@@ -55,6 +55,9 @@ const TEMPLATE = `
 				<div class="pagedjs_margin pagedjs_margin-right-middle"><div class="pagedjs_margin-content"></div></div>
 				<div class="pagedjs_margin pagedjs_margin-right-bottom"><div class="pagedjs_margin-content"></div></div>
 			</div>
+			<div class="pagedjs_area">
+				<div class="pagedjs_page_content"></div>
+			</div>
 			<div class="pagedjs_margin-left">
 				<div class="pagedjs_margin pagedjs_margin-left-top"><div class="pagedjs_margin-content"></div></div>
 				<div class="pagedjs_margin pagedjs_margin-left-middle"><div class="pagedjs_margin-content"></div></div>
@@ -71,9 +74,7 @@ const TEMPLATE = `
 			<div class="pagedjs_margin-bottom-right-corner-holder">
 				<div class="pagedjs_margin pagedjs_margin-bottom-right-corner"><div class="pagedjs_margin-content"></div></div>
 			</div>
-			<div class="pagedjs_area">
-				<div class="pagedjs_page_content"></div>
-			</div>
+			
 		</div>
 	</div>
 </div>`;
@@ -306,7 +307,7 @@ class Chunker {
 	async *layout(content, startAt) {
 		let breakToken = startAt || false;
 
-		while (breakToken !== undefined && (MAX_PAGES ? this.total < MAX_PAGES : true)) {
+		while (breakToken !== undefined && (MAX_PAGES ? (this.total < MAX_PAGES) : true)) {
 
 			if (breakToken && breakToken.node) {
 				await this.handleBreaks(breakToken.node);
@@ -478,20 +479,22 @@ class Chunker {
 
 	loadFonts() {
 		let fontPromises = [];
-		document.fonts.forEach((fontFace) => {
-			if (fontFace.status !== "loaded") {
-				let fontLoaded = fontFace.load().then((r) => {
-					return fontFace.family;
-				}, (r) => {
-					console.warn("Failed to preload font-family:", fontFace.family);
-					return fontFace.family;
-				});
-				fontPromises.push(fontLoaded);
-			}
-		});
-		return Promise.all(fontPromises).catch((err) => {
-			console.warn(err);
-		});
+		if (document.fonts) {
+			document.fonts.forEach((fontFace) => {
+				if (fontFace.status !== "loaded") {
+					let fontLoaded = fontFace.load().then((r) => {
+						return fontFace.family;
+					}, (r) => {
+						console.warn("Failed to preload font-family:", fontFace.family);
+						return fontFace.family;
+					});
+					fontPromises.push(fontLoaded);
+				}
+			});
+			return Promise.all(fontPromises).catch((err) => {
+				console.warn(err);
+			});
+		}
 	}
 
 	destroy() {

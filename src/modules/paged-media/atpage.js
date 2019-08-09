@@ -1046,6 +1046,10 @@ class AtPage extends Handler {
 			return;
 		}
 
+		if ((!content.children) && !(content.children && typeof content.children === "object" && content.children.constructor === Array)) {
+			return;
+		}
+
 		// No break
 		if (!node) {
 			return content.children[0];

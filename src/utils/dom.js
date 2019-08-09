@@ -138,12 +138,12 @@ export function rebuildAncestors(node) {
 		ancestor = ancestors[i];
 		parent = ancestor.cloneNode(false);
 
-		parent.setAttribute("data-split-from", parent.getAttribute("data-ref"));
+		parent.dataset.splitFrom = parent.getAttribute("data-ref");
 		// ancestor.setAttribute("data-split-to", parent.getAttribute("data-ref"));
 
 		if (parent.hasAttribute("id")) {
 			let dataID = parent.getAttribute("id");
-			parent.setAttribute("data-id", dataID);
+			parent.dataset.id = dataID;
 			parent.removeAttribute("id");
 		}
 

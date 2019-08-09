@@ -1,3 +1,4 @@
+import babel from 'rollup-plugin-babel';
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import minify from 'rollup-plugin-babel-minify';
@@ -19,7 +20,25 @@ const plugins = [
     }),
     minify({
     	comments: false
-    })
+    }),
+    babel({
+        exclude: 'node_modules/**',
+        runtimeHelpers: true,
+        presets: [
+            [
+                '@babel/env',
+                {
+                    modules: 'false',
+                    targets: {
+                        browsers: '> 1%, IE 11, not op_mini all, not dead',
+                        node: 8
+                    },
+                    useBuiltIns: 'usage',
+                    corejs: 2
+                }
+            ]
+        ]
+    }),
 ];
 
 export default [

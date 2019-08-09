@@ -85,18 +85,18 @@ class Breaks extends Handler {
 					if (prop.property === "break-after") {
 						let nodeAfter = elementAfter(elements[i], parsed);
 
-						elements[i].setAttribute("data-break-after", prop.value);
+						elements[i].dataset.breakAfter = prop.value;
 
 						if (nodeAfter) {
-							nodeAfter.setAttribute("data-previous-break-after", prop.value);
+							nodeAfter.dataset.previousBreakAfter = prop.value;
 						}
 					} else if (prop.property === "page") {
-						elements[i].setAttribute("data-page", prop.value);
+						elements[i].dataset.page = prop.value;
 
 						let nodeAfter = elementAfter(elements[i], parsed);
 
 						if (nodeAfter) {
-							nodeAfter.setAttribute("data-after-page", prop.value);
+							nodeAfter.dataset.afterPage = prop.value;
 						}
 					} else {
 						elements[i].setAttribute("data-" + prop.property, prop.value);
@@ -125,20 +125,20 @@ class Breaks extends Handler {
 		if (before) {
 			if (before.dataset.splitFrom) {
 				page.splitFrom = before.dataset.splitFrom;
-				pageElement.setAttribute("data-split-from", before.dataset.splitFrom);
+				pageElement.dataset.splitFrom = before.dataset.splitFrom;
 			} else if (before.dataset.breakBefore && before.dataset.breakBefore !== "avoid") {
 				page.breakBefore = before.dataset.breakBefore;
-				pageElement.setAttribute("data-break-before", before.dataset.breakBefore);
+				pageElement.dataset.breakBefore = before.dataset.breakBefore;
 			}
 		}
 
 		if (after && after.dataset) {
 			if (after.dataset.splitTo) {
 				page.splitTo = after.dataset.splitTo;
-				pageElement.setAttribute("data-split-to", after.dataset.splitTo);
+				pageElement.dataset.splitTo = after.dataset.splitTo;
 			} else if (after.dataset.breakAfter && after.dataset.breakAfter !== "avoid") {
 				page.breakAfter = after.dataset.breakAfter;
-				pageElement.setAttribute("data-break-after", after.dataset.breakAfter);
+				pageElement.dataset.breakAfter = after.dataset.breakAfter;
 			}
 		}
 
