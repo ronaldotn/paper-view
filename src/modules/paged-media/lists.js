@@ -27,7 +27,7 @@ class Lists extends Handler {
 	addDataNumbers(list) {
 		let items = list.children;
 		for (var i = 0; i < items.length; i++) {
-			items[i].setAttribute("data-item-num", i + 1);
+			items[i].dataset.itemNum = i + 1;
 		}
 	}
 

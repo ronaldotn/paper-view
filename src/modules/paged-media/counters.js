@@ -162,7 +162,7 @@ class Counters extends Handler {
 	}
 
 	afterPageLayout(pageElement, page) {
-		let pgreset = pageElement.querySelectorAll("[data-counter-page-reset]");
+		let pgreset = Array.prototype.slice.call(pageElement.querySelectorAll("[data-counter-page-reset]"));
 		pgreset.forEach((reset) => {
 			let value = reset.datasetCounterPageReset;
 			this.styleSheet.insertRule(`[data-page-number="${pageElement.dataset.pageNumber}"] { counter-reset: page ${value} }`, this.styleSheet.cssRules.length);

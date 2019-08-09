@@ -1,6 +1,8 @@
 import Sheet from "./sheet";
 import baseStyles from "./base";
+import baseStylesIE from "./baseCssIE";
 import Hook from "../utils/hook";
+import {browserAgent} from "../utils/utils";
 import request from "../utils/request";
 
 class Polisher {
@@ -27,7 +29,11 @@ class Polisher {
 	}
 
 	setup() {
-		this.base = this.insert(baseStyles);
+		if (browserAgent() === 'Edge' || browserAgent() === 'IE') {
+			this.base = this.insert(baseStylesIE);
+		} else {
+			this.base = this.insert(baseStyles);
+		}
 		this.styleEl = document.createElement("style");
 		document.head.appendChild(this.styleEl);
 		this.styleSheet = this.styleEl.sheet;
@@ -102,7 +108,7 @@ class Polisher {
 		let head = document.querySelector("head");
 		let style = document.createElement("style");
 		style.type = "text/css";
-		style.setAttribute("data-pagedjs-inserted-styles", "true");
+		style.dataset.pagedjsInsertedStyles = "true";
 
 		style.appendChild(document.createTextNode(text));
 

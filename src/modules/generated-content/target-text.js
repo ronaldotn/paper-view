@@ -69,7 +69,7 @@ class TargetText extends Handler {
 				if (element) {
 					if (target.style === "content") {
 						let selector = UUID();
-						selected.setAttribute("data-target-text", selector);
+						selected.dataset.targetText = selector;
 
 						let psuedo = "";
 						if (split.length > 1) {

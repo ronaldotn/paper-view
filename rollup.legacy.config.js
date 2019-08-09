@@ -1,3 +1,4 @@
+import babel from 'rollup-plugin-babel';
 import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import json from 'rollup-plugin-json';
@@ -13,7 +14,25 @@ const plugins = [
 		targets: [
 			{ src: './examples/assets/styles/**/*', dest: './dist/css' }
 		]
-	})
+	}),
+	babel({
+		exclude: 'node_modules/**',
+		runtimeHelpers: true,
+		presets: [
+			[
+				'@babel/env',
+				{
+					modules: 'false',
+					targets: {
+						browsers: '> 1%, IE 11, not op_mini all, not dead',
+						node: 8
+					},
+					useBuiltIns: 'usage',
+					corejs: 2
+				}
+			]
+		]
+	}),
 ];
 
 export default [

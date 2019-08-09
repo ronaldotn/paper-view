@@ -1,5 +1,6 @@
 import Layout from "./layout";
 import EventEmitter from "event-emitter";
+import {browserAgent} from "../utils/utils";
 
 /**
  * Render a page
@@ -42,7 +43,9 @@ class Page {
 
 
 		area.style.columnWidth = Math.round(size.width) + "px";
-		area.style.columnGap = "calc(var(--pagedjs-margin-right) + var(--pagedjs-margin-left))";
+		if (browserAgent() !== 'Edge' && browserAgent() !== 'IE') {
+			area.style.columnGap = "calc(var(--pagedjs-margin-right) + var(--pagedjs-margin-left))";
+		}
 		// area.style.overflow = "scroll";
 
 		this.width = Math.round(size.width);

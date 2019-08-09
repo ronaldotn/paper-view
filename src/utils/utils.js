@@ -247,3 +247,17 @@ export const requestIdleCallback = typeof window !== "undefined" && ("requestIdl
 export function CSSValueToString(obj) {
 	return obj.value + (obj.unit || "");
 }
+
+export function browserAgent() {
+	if (window.navigator.userAgent.indexOf('Edge/') > 0) {
+		return 'Edge';
+	} else if (window.navigator.userAgent.indexOf('Trident/') > 0) {
+		return 'IE';
+	} else if (window.navigator.userAgent.indexOf('Firefox/') > 0) {
+		return 'Firefox';
+	} else if (window.navigator.userAgent.indexOf('Chrome/') > 0) {
+		return 'Chrome';
+	} else {
+		return 'unknown';
+	}
+}

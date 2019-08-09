@@ -8,13 +8,14 @@ import { isElement } from "../utils/dom";
 class ContentParser {
 
 	constructor(content, cb) {
-		if (content && content.nodeType) {
-			// handle dom
-			this.dom = this.add(content);
-		} else if (typeof content === "string") {
-			this.dom = this.parse(content);
-		}
-
+		try {
+			if (content && content.nodeType) {
+				// handle dom
+				this.dom = this.add(content);
+			} else if (typeof content === "string") {
+				this.dom = this.parse(content);
+			}
+		} catch (e) {}
 		return this.dom;
 	}
 
