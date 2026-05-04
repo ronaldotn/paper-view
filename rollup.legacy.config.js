@@ -1,10 +1,10 @@
-import babel from 'rollup-plugin-babel';
-import resolve from 'rollup-plugin-node-resolve';
-import commonjs from 'rollup-plugin-commonjs';
-import json from 'rollup-plugin-json';
+import babel from '@rollup/plugin-babel';
+import resolve from '@rollup/plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
+import json from '@rollup/plugin-json';
 import copy from 'rollup-plugin-copy';
 
-import pkg from './package.json';
+import pkg from './package.json' with { type: 'json' };
 
 const plugins = [
 	resolve(),
@@ -17,21 +17,22 @@ const plugins = [
 	}),
 	babel({
 		exclude: 'node_modules/**',
-		runtimeHelpers: true,
+		babelHelpers: 'runtime',
 		presets: [
 			[
-				'@babel/env',
+				'@babel/preset-env',
 				{
-					modules: 'false',
+					modules: false,
 					targets: {
 						browsers: '> 1%, IE 11, not op_mini all, not dead',
 						node: 8
 					},
 					useBuiltIns: 'usage',
-					corejs: 2
+					corejs: 3
 				}
 			]
-		]
+		],
+		plugins: ['@babel/plugin-transform-runtime']
 	}),
 ];
 

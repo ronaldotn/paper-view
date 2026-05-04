@@ -1,5 +1,5 @@
 import Handler from "../handler";
-import csstree from "css-tree";
+import * as csstree from "css-tree";
 import pageSizes from "../../polisher/sizes";
 import { rebuildAncestors } from "../../utils/dom";
 import { CSSValueToString } from "../../utils/utils";

@@ -1,5 +1,5 @@
 import Handler from "../handler";
-import csstree from "css-tree";
+import * as csstree from "css-tree";
 
 class RunningHeaders extends Handler {
 	constructor(chunker, polisher, caller) {

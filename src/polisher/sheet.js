@@ -1,4 +1,4 @@
-import csstree from "css-tree";
+import * as csstree from "css-tree";
 import { UUID } from "../utils/utils";
 import Hook from "../utils/hook";
 

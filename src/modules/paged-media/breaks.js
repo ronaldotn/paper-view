@@ -1,5 +1,5 @@
 import Handler from "../handler";
-import csstree from "css-tree";
+import * as csstree from "css-tree";
 import { elementAfter } from "../../utils/dom";
 
 class Breaks extends Handler {

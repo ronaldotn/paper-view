@@ -1,6 +1,6 @@
 import Handler from "../handler";
 import { UUID, attr, querySelectorEscape } from "../../utils/utils";
-import csstree from "css-tree";
+import * as csstree from "css-tree";
 
 class TargetCounters extends Handler {
 	constructor(chunker, polisher, caller) {
