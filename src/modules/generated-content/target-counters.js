@@ -13,7 +13,7 @@ class TargetCounters extends Handler {
 	onContent(funcNode, fItem, fList, declaration, rule) {
 		if (funcNode.name === "target-counter") {
 			let selector = csstree.generate(rule.ruleNode.prelude);
-			let first = funcNode.children.first();
+			let first = funcNode.children.first;
 			let func = first.name;
 
 			let value = csstree.generate(funcNode);

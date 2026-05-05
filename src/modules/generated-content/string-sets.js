@@ -12,7 +12,7 @@ class StringSets extends Handler {
 		if (declaration.property === "string-set") {
 			let selector = csstree.generate(rule.ruleNode.prelude);
 
-			let identifier = declaration.value.children.first().name;
+			let identifier = declaration.value.children.first.name;
 
 			let value;
 			csstree.walk(declaration, {
@@ -32,7 +32,7 @@ class StringSets extends Handler {
 
 	onContent(funcNode, fItem, fList, declaration, rule) {
 		if (funcNode.name === "string") {
-			let identifier = funcNode.children && funcNode.children.first().name;
+			let identifier = funcNode.children && funcNode.children.first.name;
 			funcNode.name = "var";
 			funcNode.children = new csstree.List();
 

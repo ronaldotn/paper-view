@@ -235,7 +235,7 @@ class AtPage extends Handler {
 			visit: "PseudoClassSelector",
 			enter: (node, item, list) => {
 				if (node.name === "nth" && node.children) {
-					let raw = node.children.first();
+					let raw = node.children.first;
 					nth = raw.value;
 				}
 			}
@@ -302,7 +302,7 @@ class AtPage extends Handler {
 							bottom: {}
 						};
 					}
-					parsed.margin[m] = declaration.value.children.first();
+					parsed.margin[m] = declaration.value.children.first;
 					dList.remove(dItem);
 				} else if (prop === "size") {
 					parsed.size = this.getSize(declaration);
@@ -501,10 +501,10 @@ class AtPage extends Handler {
 		};
 		let rule = this.createRule(selectors, block);
 
-		this.addMarginVars(page.margin, children, children.first());
+		this.addMarginVars(page.margin, children, children.first);
 
 		if (page.width) {
-			this.addDimensions(page.width, page.height, page.orientation, children, children.first());
+			this.addDimensions(page.width, page.height, page.orientation, children, children.first);
 		}
 
 		if (page.marginalia) {
@@ -563,7 +563,7 @@ class AtPage extends Handler {
 			let block = csstree.clone(page.marginalia[loc]);
 			let hasContent = false;
 
-			if(block.children.isEmpty()) {
+			if(block.children.isEmpty) {
 				continue;
 			}
 
@@ -571,7 +571,7 @@ class AtPage extends Handler {
 				visit: "Declaration",
 				enter: (node, item, list) => {
 					if (node.property === "content") {
-						if (node.value.children && node.value.children.first().name === "none") {
+						if (node.value.children && node.value.children.first.name === "none") {
 							hasContent = false;
 						} else {
 							hasContent = true;
@@ -653,7 +653,7 @@ class AtPage extends Handler {
 						list.remove(item);
 					}
 
-					if (node.value.children && node.value.children.first().name === "none") {
+					if (node.value.children && node.value.children.first.name === "none") {
 						displayNone = true;
 					}
 				}

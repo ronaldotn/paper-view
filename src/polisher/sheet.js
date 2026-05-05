@@ -180,7 +180,7 @@ class Sheet {
 					visit: "Declaration",
 					enter: (declaration, dItem, dList) => {
 						if (declaration.property === "page") {
-							let value = declaration.value.children.first();
+							let value = declaration.value.children.first;
 							let name = value.name;
 							let selector = csstree.generate(node.prelude);
 							namedPageSelectors[name] = {

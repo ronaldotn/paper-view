@@ -13,7 +13,7 @@ class Breaks extends Handler {
 		let property = declaration.property;
 
 		if (property === "page") {
-			let children = declaration.value.children.first();
+			let children = declaration.value.children.first;
 			let value = children.name;
 			let selector = csstree.generate(rule.ruleNode.prelude);
 			let name = value;
@@ -41,7 +41,7 @@ class Breaks extends Handler {
 				property === "page-break-before" ||
 				property === "page-break-after"
 		) {
-			let child = declaration.value.children.first();
+			let child = declaration.value.children.first;
 			let value = child.name;
 			let selector = csstree.generate(rule.ruleNode.prelude);
 

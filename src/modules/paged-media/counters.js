@@ -50,7 +50,7 @@ class Counters extends Handler {
 	}
 
 	handleIncrement(declaration, rule) {
-		let identifier = declaration.value.children.first();
+		let identifier = declaration.value.children.first;
 		let number = declaration.value.children.getSize() > 1
 							&& declaration.value.children.last().value;
 		let name = identifier && identifier.name;
@@ -75,7 +75,7 @@ class Counters extends Handler {
 	}
 
 	handleReset(declaration, rule) {
-		let identifier = declaration.value.children.first();
+		let identifier = declaration.value.children.first;
 		let number = declaration.value.children.getSize() > 1
 							&& declaration.value.children.last().value;
 		let name = identifier && identifier.name;

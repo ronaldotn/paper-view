@@ -12,14 +12,14 @@ class RunningHeaders extends Handler {
 	onDeclaration(declaration, dItem, dList, rule) {
 		if (declaration.property === "position") {
 			let selector = csstree.generate(rule.ruleNode.prelude);
-			let identifier = declaration.value.children.first().name;
+			let identifier = declaration.value.children.first.name;
 
 			if (identifier === "running") {
 				let value;
 				csstree.walk(declaration, {
 					visit: "Function",
 					enter: (node, item, list) => {
-						value = node.children.first().name;
+						value = node.children.first.name;
 					}
 				});
 
@@ -43,7 +43,7 @@ class RunningHeaders extends Handler {
 
 						let func = funcNode.name;
 
-						let value = funcNode.children.first().name;
+						let value = funcNode.children.first.name;
 
 						let args = [value];
 
