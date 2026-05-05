@@ -1,12 +1,12 @@
 const TIMEOUT = 10000;
 
-describe('duplicate-headers', async () => {
+describe('duplicate-headers', () => {
 		let page;
 		let rendered;
 		beforeAll(async () => {
 			page = await loadPage('issues/duplicate-headers/duplicate-headers.html')
-			return page.rendered;
-		}, TIMEOUT)
+			// page.rendered awaited in loadPage
+		})
 
 		afterAll(async () => {
 			if (!DEBUG) {

@@ -1,12 +1,12 @@
 const TIMEOUT = 10000; // Some book might take longer than this to renderer
 
-describe('break-before-left', async () => {
+describe('break-before-left', () => {
 		let page;
 		let rendered;
 		beforeAll(async () => {
 			page = await loadPage('breaks/break-before/break-before-left/break-before-left.html')
-			return page.rendered;
-		}, TIMEOUT)
+			// page.rendered awaited in loadPage
+		})
 
 		afterAll(async () => {
 			if (!DEBUG) {

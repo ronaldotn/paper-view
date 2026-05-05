@@ -1,12 +1,12 @@
 const TIMEOUT = 10000;
 
-describe('css is awesome', async () => {
+describe('css is awesome', () => {
 		let page;
 		let rendered;
 		beforeAll(async () => {
 			page = await loadPage('hyphens/awesome/awesome.html')
-			return page.rendered;
-		}, TIMEOUT)
+			// page.rendered awaited in loadPage
+		})
 
 		afterAll(async () => {
 			if (!DEBUG) {

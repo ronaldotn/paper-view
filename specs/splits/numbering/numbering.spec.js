@@ -1,12 +1,12 @@
 const TIMEOUT = 10000;
 
-describe('numbering', async () => {
+describe('numbering', () => {
 		let page;
 		let rendered;
 		beforeAll(async () => {
 			page = await loadPage('splits/numbering/numbering.html')
-			return page.rendered;
-		}, TIMEOUT)
+			// page.rendered awaited in loadPage
+		})
 
 		afterAll(async () => {
 			if (!DEBUG) {

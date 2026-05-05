@@ -7,9 +7,11 @@ import copy from 'rollup-plugin-copy';
 
 import pkg from './package.json' with { type: 'json' };
 
-const plugins = [
-    resolve(),
-    commonjs({
+ const plugins = [
+     resolve({
+         browser: true
+     }),
+     commonjs({
         include: 'node_modules/**'
     }),
     json(),

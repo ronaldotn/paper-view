@@ -1,12 +1,12 @@
 const TIMEOUT = 10000;
 
-describe('vertical-align', async () => {
+describe('vertical-align', () => {
 		let page;
 		let rendered;
 		beforeAll(async () => {
 			page = await loadPage('margin-boxes/vertical-align/vertical-align.html')
-			return page.rendered;
-		}, TIMEOUT)
+			// page.rendered awaited in loadPage
+		})
 
 		afterAll(async () => {
 			if (!DEBUG) {

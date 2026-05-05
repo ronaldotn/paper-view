@@ -3439,7 +3439,7 @@ jest-haste-map@^29.7.0:
   optionalDependencies:
     fsevents "^2.3.2"
 
-jest-image-snapshot@^6.4.0:
+jest-image-snapshot@^6.5.2:
   version "6.5.2"
   resolved "https://registry.npmjs.org/jest-image-snapshot/-/jest-image-snapshot-6.5.2.tgz"
   integrity sha512-frenWThr5ddnnokcX5N4gwi41hA5TiUOdhv/JoGcJrOaktHjrk4/7XbiHKW52lgKX+vei6QkRlgM7fkYQ15nPg==
@@ -3993,6 +3993,11 @@ mitt@^3.0.1:
   version "3.0.1"
   resolved "https://registry.npmjs.org/mitt/-/mitt-3.0.1.tgz"
   integrity sha512-vKivATfr97l2/QBCYAkXYDbrIWPM2IIKEl7YPhjCvKlG3kE2gm+uBo6nEXK3M5/Ffh/FLpKExzOQ3JJoJGFKBw==
+
+mkdirp@^3.0.1:
+  version "3.0.1"
+  resolved "https://registry.npmjs.org/mkdirp/-/mkdirp-3.0.1.tgz"
+  integrity sha512-+NsyUUAZDmo6YVHzL/stxSu3t9YS1iljliy3BSDrXJ/dkn1KYdmtZODGGjLcc9XLgVVpH4KshHB8XmZgMhaBXg==
 
 ms@^2.1.3, ms@2.1.3:
   version "2.1.3"

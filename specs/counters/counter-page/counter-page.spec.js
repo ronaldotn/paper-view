@@ -1,12 +1,12 @@
 const TIMEOUT = 10000; // Some book might take longer than this to renderer
 
-describe('counter-page', async () => {
+describe('counter-page', () => {
 		let page;
 		let rendered;
 		beforeAll(async () => {
 			page = await loadPage('counters/counter-page/counter-page.html')
-			return page.rendered;
-		}, TIMEOUT)
+			// page.rendered awaited in loadPage
+		})
 
 		afterAll(async () => {
 			if (!DEBUG) {

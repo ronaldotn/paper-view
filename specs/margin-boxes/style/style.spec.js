@@ -1,12 +1,12 @@
 const TIMEOUT = 10000;
 
-describe('text-align', async () => {
+describe('text-align', () => {
 		let page;
 		let rendered;
 		beforeAll(async () => {
 			page = await loadPage('margin-boxes/style/style.html')
-			return page.rendered;
-		}, TIMEOUT)
+			// page.rendered awaited in loadPage
+		})
 
 		afterAll(async () => {
 			if (!DEBUG) {

@@ -1,12 +1,12 @@
 const TIMEOUT = 10000;
 
-describe('margin-box-dimension', async () => {
+describe('margin-box-dimension', () => {
 		let page;
 		let rendered;
 		beforeAll(async () => {
 			page = await loadPage('margin-boxes/dimension/dimension.html')
-			return page.rendered;
-		}, TIMEOUT)
+			// page.rendered awaited in loadPage
+		})
 
 		afterAll(async () => {
 			if (!DEBUG) {

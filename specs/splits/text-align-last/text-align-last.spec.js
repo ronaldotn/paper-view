@@ -1,12 +1,12 @@
 const TIMEOUT = 10000;
 
-describe('text-align-last', async () => {
+describe('text-align-last', () => {
 		let page;
 		let rendered;
 		beforeAll(async () => {
 			page = await loadPage('splits/text-align-last/text-align-last.html')
-			return page.rendered;
-		}, TIMEOUT)
+			// page.rendered awaited in loadPage
+		})
 
 		afterAll(async () => {
 			if (!DEBUG) {

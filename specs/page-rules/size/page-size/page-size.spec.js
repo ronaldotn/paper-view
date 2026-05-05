@@ -1,12 +1,12 @@
 const TIMEOUT = 10000;
 
-describe('page-size', async () => {
+describe('page-size', () => {
 		let page;
 		let rendered;
 		beforeAll(async () => {
 			page = await loadPage('page-rules/size/page-size/page-size.html')
-			return page.rendered;
-		}, TIMEOUT)
+			// page.rendered awaited in loadPage
+		})
 
 		afterAll(async () => {
 			if (!DEBUG) {

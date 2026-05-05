@@ -1,12 +1,12 @@
 const TIMEOUT = 10000;
 
-describe('content-none', async () => {
+describe('content-none', () => {
 		let page;
 		let rendered;
 		beforeAll(async () => {
 			page = await loadPage('generate-content/content-none/content-none.html')
-			return page.rendered;
-		}, TIMEOUT)
+			// page.rendered awaited in loadPage
+		})
 
 		afterAll(async () => {
 			if (!DEBUG) {

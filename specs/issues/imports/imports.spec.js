@@ -1,12 +1,12 @@
 const TIMEOUT = 10000;
 
-describe('imports', async () => {
+describe('imports', () => {
 		let page;
 		let rendered;
 		beforeAll(async () => {
 			page = await loadPage('issues/imports/imports.html')
-			return page.rendered;
-		}, TIMEOUT)
+			// page.rendered awaited in loadPage
+		})
 
 		afterAll(async () => {
 			if (!DEBUG) {

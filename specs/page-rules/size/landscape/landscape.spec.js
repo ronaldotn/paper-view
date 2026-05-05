@@ -1,12 +1,12 @@
 const TIMEOUT = 10000;
 
-describe('landscape', async () => {
+describe('landscape', () => {
 		let page;
 		let rendered;
 		beforeAll(async () => {
 			page = await loadPage('page-rules/size/landscape/landscape.html')
-			return page.rendered;
-		}, TIMEOUT)
+			// page.rendered awaited in loadPage
+		})
 
 		afterAll(async () => {
 			if (!DEBUG) {

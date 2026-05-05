@@ -1,12 +1,12 @@
 const TIMEOUT = 10000;
 
-describe('roman-numerals', async () => {
+describe('roman-numerals', () => {
 		let page;
 		let rendered;
 		beforeAll(async () => {
 			page = await loadPage('issues/roman-numerals/roman-numerals.html')
-			return page.rendered;
-		}, TIMEOUT)
+			// page.rendered awaited in loadPage
+		})
 
 		afterAll(async () => {
 			if (!DEBUG) {
