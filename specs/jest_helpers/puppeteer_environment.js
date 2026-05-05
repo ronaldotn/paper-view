@@ -10,6 +10,7 @@ const { WS_ENDPOINT_PATH, DIR, DEBUG, ORIGIN, PDF_SETTINGS } = require('./consta
 class PuppeteerEnvironment extends TestEnvironment {
 	constructor(config) {
 		super(config);
+		this.openPages = new Set();
 	}
 
 	async setup() {
@@ -31,6 +32,22 @@ class PuppeteerEnvironment extends TestEnvironment {
 
 	async teardown() {
 		DEBUG && console.log(chalk.yellow('Teardown Test Environment.'));
+		// Close all open pages
+		for (const page of this.openPages) {
+			try {
+				if (!page.isClosed()) {
+					await page.close();
+				}
+			} catch (e) {
+				console.error('Error closing page:', e.message);
+			}
+		}
+		this.openPages.clear();
+		await super.teardown();
+	}
+
+	async teardown() {
+		DEBUG && console.log(chalk.yellow('Teardown Test Environment.'));
 		await super.teardown();
 	}
 
@@ -47,17 +64,18 @@ class PuppeteerEnvironment extends TestEnvironment {
 			throw new Error('Browser not initialized');
 		}
 		let page = await this.global.browser.newPage();
+		this.openPages.add(page);
 		
 		page.on('pageerror', (error) => {
 			console.error('Page error:', error.message, error.stack);
 		});
 		
 		page.on('error', (error) => {
-			console.error('Page crash:', error);
+			console.log('Page crash:', error);
 		});
 		
 		page.on('requestfailed', (error) => {
-			console.error('Request failed:', error);
+			console.log('Request failed:', error.url(), error.failure().errorText);
 		});
 
 		page.on('console', (msg) => {
@@ -92,7 +110,9 @@ class PuppeteerEnvironment extends TestEnvironment {
 		} catch(e) {
 			// If timeout, take screenshot for debugging
 			console.error('Timeout waiting for .pagedjs_page:', e.message);
-			await page.screenshot({ path: 'C:/temp/timeout_debug.png' }).catch(() => {});
+			try {
+				await page.screenshot({ path: 'C:/temp/timeout_debug.png' });
+			} catch(e2) {}
 			// Check what's on the page
 			let content = await page.evaluate(() => {
 				return {
@@ -101,6 +121,14 @@ class PuppeteerEnvironment extends TestEnvironment {
 				};
 			});
 			console.error('Page state:', JSON.stringify(content));
+			
+			// Check if there's a preview error
+			let previewError = await page.evaluate(() => {
+				return window.__previewError || null;
+			});
+			if (previewError) {
+				console.error('Preview error from page:', previewError);
+			}
 		}
 
 		return page;
