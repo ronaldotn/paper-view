@@ -6,7 +6,7 @@ class TargetText extends Handler {
 	constructor(chunker, polisher, caller) {
 		super(chunker, polisher, caller);
 
-		this.styleSheet = polisher.styleSheet;
+		this.polisher = polisher;
 		this.textTargets = {};
 	}
 
@@ -82,8 +82,8 @@ class TargetText extends Handler {
 							return "\\00000A";
 						});
 
-						// this.styleSheet.insertRule(`[data-target-text="${selector}"]${psuedo} { content: "${element.textContent}" }`, this.styleSheet.cssRules.length);
-						this.styleSheet.insertRule(`[data-target-text="${selector}"]${psuedo} { ${target.variable}: "${textContent}" }`, this.styleSheet.cssRules.length);
+						// this.polisher.styleSheet.insertRule(`[data-target-text="${selector}"]${psuedo} { content: "${element.textContent}" }`, this.polisher.styleSheet.cssRules.length);
+						this.polisher.styleSheet.insertRule(`[data-target-text="${selector}"]${psuedo} { ${target.variable}: "${textContent}" }`, this.polisher.styleSheet.cssRules.length);
 
 					}
 				} else {

@@ -40,7 +40,7 @@ ready.then(async function () {
 	if(config.auto !== false) {
 		console.log('Polyfill: Calling preview()...');
 		try {
-			done = await previewer.preview(config.content, config.stylesheets, config.renderTo);
+			done = await previewer.preview(config.content, config.renderTo, config.stylesheets);
 			console.log('Polyfill: preview() completed, done:', done);
 			window.__previewDone = done;
 		} catch(e) {

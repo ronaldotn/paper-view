@@ -5,7 +5,7 @@ class Counters extends Handler {
 	constructor(chunker, polisher, caller) {
 		super(chunker, polisher, caller);
 
-		this.styleSheet = polisher.styleSheet;
+		this.polisher = polisher;
 		this.counters = {};
 	}
 
@@ -150,8 +150,8 @@ class Counters extends Handler {
 
 				increment = element.getAttribute("data-counter-"+ counterName +"-increment");
 
-				this.styleSheet.insertRule(`[data-ref="${element.dataset.ref}"] { counter-reset: ${counterName} ${count} }`, this.styleSheet.cssRules.length);
-				this.styleSheet.insertRule(`[data-ref="${element.dataset.ref}"] { counter-increment: ${counterName} ${increment}}`, this.styleSheet.cssRules.length);
+				this.polisher.styleSheet.insertRule(`[data-ref="${element.dataset.ref}"] { counter-reset: ${counterName} ${count} }`, this.polisher.styleSheet.cssRules.length);
+				this.polisher.styleSheet.insertRule(`[data-ref="${element.dataset.ref}"] { counter-increment: ${counterName} ${increment} }`, this.polisher.styleSheet.cssRules.length);
 
 				count += parseInt(increment);
 
@@ -165,7 +165,7 @@ class Counters extends Handler {
 		let pgreset = Array.prototype.slice.call(pageElement.querySelectorAll("[data-counter-page-reset]"));
 		pgreset.forEach((reset) => {
 			let value = reset.datasetCounterPageReset;
-			this.styleSheet.insertRule(`[data-page-number="${pageElement.dataset.pageNumber}"] { counter-reset: page ${value} }`, this.styleSheet.cssRules.length);
+			this.polisher.styleSheet.insertRule(`[data-page-number="${pageElement.dataset.pageNumber}"] { counter-reset: page ${value} }`, this.polisher.styleSheet.cssRules.length);
 		});
 	}
 

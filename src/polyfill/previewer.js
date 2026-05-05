@@ -118,7 +118,7 @@ class Previewer {
 		let content;
 		if (typeof contentFrom === "string") {
 			content = contentFrom;
-		} else {
+		} else if (contentFrom && typeof contentFrom === "object") {
 			contentFrom.style.display = "none";
 			content = contentFrom.innerHTML;
 		}
@@ -131,9 +131,9 @@ class Previewer {
 			stylesheets = this.removeStyles();
 		}
 
-		this.polisher.setup();
-
 		this.handlers = this.initializeHandlers();
+
+		this.polisher.setup();
 
 		await this.polisher.add(...stylesheets);
 

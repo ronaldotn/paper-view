@@ -6,8 +6,7 @@ class TargetCounters extends Handler {
 	constructor(chunker, polisher, caller) {
 		super(chunker, polisher, caller);
 
-		this.styleSheet = polisher.styleSheet;
-
+		this.polisher = polisher;
 		this.counterTargets = {};
 	}
 
@@ -113,11 +112,11 @@ class TargetCounters extends Handler {
 						if (split.length > 1) {
 							psuedo += "::" + split[1];
 						}
-						this.styleSheet.insertRule(`[data-${target.variable}="${selector}"]${psuedo} { counter-reset: ${target.variable} ${pg}; }`, this.styleSheet.cssRules.length);
+						this.polisher.styleSheet.insertRule(`[data-${target.variable}="${selector}"]${psuedo} { counter-reset: ${target.variable} ${pg}; }`, this.polisher.styleSheet.cssRules.length);
 					} else {
 						let value = element.getAttribute(`data-counter-${target.counter}-value`);
 						if (value) {
-							this.styleSheet.insertRule(`[data-${target.variable}="${selector}"]${psuedo} { counter-reset: ${target.variable} ${target.variable} ${parseInt(value)}; }`, this.styleSheet.cssRules.length);
+							this.polisher.styleSheet.insertRule(`[data-${target.variable}="${selector}"]${psuedo} { counter-reset: ${target.variable} ${target.variable} ${parseInt(value)}; }`, this.polisher.styleSheet.cssRules.length);
 						}
 					}
 				}
