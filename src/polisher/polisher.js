@@ -29,7 +29,7 @@ class Polisher {
 	}
 
 	setup() {
-		if (browserAgent() === 'Edge' || browserAgent() === 'IE') {
+		if (browserAgent() === "Edge" || browserAgent() === "IE") {
 			this.base = this.insert(baseStylesIE);
 		} else {
 			this.base = this.insert(baseStyles);

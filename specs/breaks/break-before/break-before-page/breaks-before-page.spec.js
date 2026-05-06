@@ -1,4 +1,4 @@
-const TIMEOUT = 10000; // Some book might take longer than this to renderer
+	const TIMEOUT = 10000; // Some book might take longer than this to renderer 
 
 describe('break-before-page', () => {
 		let page;
@@ -6,6 +6,21 @@ describe('break-before-page', () => {
 		beforeAll(async () => {
 			page = await loadPage('breaks/break-before/break-before-page/break-before-page.html')
 			// page.rendered awaited in loadPage
+			 
+			// Debug: check if elements have id and data-id attributes
+			let debugInfo = await page.evaluate(() => {
+				let info = {};
+				let elementsWithId = document.querySelectorAll('[id]');
+				info.elementsWithId = elementsWithId.length;
+				info.idValues = Array.from(elementsWithId).map(el => el.id);
+				
+				let elementsWithDataId = document.querySelectorAll('[data-id]');
+				info.elementsWithDataId = elementsWithDataId.length;
+				info.dataIdValues = Array.from(elementsWithDataId).map(el => el.getAttribute('data-id'));
+				
+				return info;
+			});
+			console.log('Debug info:', JSON.stringify(debugInfo));
 		})
 
 		afterAll(async () => {

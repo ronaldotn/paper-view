@@ -4,7 +4,7 @@ function EventEmitter(instance) {
 		// Called as a mixin function
 		var proto = EventEmitter.prototype;
 		for (var key in proto) {
-			if (proto.hasOwnProperty(key)) {
+			if (Object.prototype.hasOwnProperty.call(proto, key)) {
 				instance[key] = proto[key].bind ? proto[key].bind(instance) : proto[key];
 			}
 		}

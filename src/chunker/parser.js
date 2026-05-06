@@ -15,7 +15,9 @@ class ContentParser {
 			} else if (typeof content === "string") {
 				this.dom = this.parse(content);
 			}
-		} catch (e) {}
+		} catch (e) {
+			// Ignore parse errors
+		}
 		return this.dom;
 	}
 

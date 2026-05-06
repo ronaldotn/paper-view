@@ -43,7 +43,7 @@ class Page {
 
 
 		area.style.columnWidth = Math.round(size.width) + "px";
-		if (browserAgent() !== 'Edge' && browserAgent() !== 'IE') {
+		if (browserAgent() !== "Edge" && browserAgent() !== "IE") {
 			area.style.columnGap = "calc(var(--pagedjs-margin-right) + var(--pagedjs-margin-left))";
 		}
 		// area.style.overflow = "scroll";
