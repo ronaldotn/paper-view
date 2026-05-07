@@ -5,6 +5,9 @@ import Hook from "../utils/hook";
 import {browserAgent} from "../utils/utils";
 import request from "../utils/request";
 
+// Import page numbering CSS integration utilities
+import { parsePageRules, extractPageNumberingConfig } from "../modules/page-numbering/css-integration.js";
+
 class Polisher {
 	constructor(setup) {
 		this.sheets = [];
@@ -22,6 +25,9 @@ class Polisher {
 		this.hooks.beforeTreeParse = new Hook(this);
 		this.hooks.beforeTreeWalk = new Hook(this);
 		this.hooks.afterTreeWalk = new Hook(this);
+
+		// Store page numbering configuration extracted from CSS
+		this.pageNumberingConfig = null;
 
 		if (setup !== false) {
 			this.setup();
@@ -101,6 +107,11 @@ class Polisher {
 		if (typeof sheet.orientation !== "undefined") {
 			this.orientation = sheet.orientation;
 		}
+
+		// Extract page numbering configuration from this sheet
+		// Reset cached config since we're adding a new sheet
+		this.pageNumberingConfig = null;
+		
 		return sheet.toString();
 	}
 
@@ -124,6 +135,139 @@ class Polisher {
 			s.remove();
 		});
 		this.sheets = [];
+		this.pageNumberingConfig = null;
+	}
+
+	/**
+	 * Extract page numbering configuration from all parsed CSS sheets
+	 * This method parses @page rules to find page numbering properties
+	 * and returns the configuration object
+	 * 
+	 * @returns {object|null} Page numbering configuration or null if not found
+	 */
+	getPageNumberingConfig() {
+		// If we already extracted config, return it
+		if (this.pageNumberingConfig !== null) {
+			return this.pageNumberingConfig;
+		}
+
+		// Extract @page rules from all sheets
+		const allPageRules = [];
+		
+		for (const sheet of this.sheets) {
+			if (sheet.text) {
+				const pageRules = parsePageRules(sheet.text);
+				if (pageRules && pageRules.length > 0) {
+					allPageRules.push(...pageRules);
+				}
+			}
+		}
+
+		// Extract configuration from @page rules
+		if (allPageRules.length > 0) {
+			this.pageNumberingConfig = extractPageNumberingConfig(allPageRules);
+		} else {
+			this.pageNumberingConfig = null;
+		}
+
+		return this.pageNumberingConfig;
+	}
+
+	/**
+	 * Get all parsed @page rules from CSS sheets
+	 * This includes rules with page numbering properties and other @page rules
+	 * 
+	 * @returns {Array} Array of parsed @page rules
+	 */
+	getPageRules() {
+		const allPageRules = [];
+		
+		for (const sheet of this.sheets) {
+			if (sheet.text) {
+				const pageRules = parsePageRules(sheet.text);
+				if (pageRules && pageRules.length > 0) {
+					allPageRules.push(...pageRules);
+				}
+			}
+		}
+
+		return allPageRules;
+	}
+
+	/**
+	 * Check if any parsed CSS contains page numbering configuration
+	 * 
+	 * @returns {boolean} True if page numbering CSS properties are found
+	 */
+	hasPageNumberingCSS() {
+		for (const sheet of this.sheets) {
+			if (sheet.text && sheet.text.includes('pagedjs-page-numbering')) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Apply CSS specificity and inheritance to page numbering configuration
+	 * This handles cases like @page :first vs @page, etc.
+	 * 
+	 * @param {Array} pageRules - Array of parsed @page rules
+	 * @returns {object} Merged configuration with specificity applied
+	 */
+	applyPageNumberingSpecificity(pageRules) {
+		if (!pageRules || pageRules.length === 0) {
+			return null;
+		}
+
+		// Sort rules by specificity (more specific selectors first)
+		const sortedRules = [...pageRules].sort((a, b) => {
+			const aSpecificity = this.calculateSpecificity(a.selector);
+			const bSpecificity = this.calculateSpecificity(b.selector);
+			return bSpecificity - aSpecificity; // Descending order
+		});
+
+		// Extract config from most specific to least specific
+		// More specific rules override less specific ones
+		let mergedConfig = {};
+		
+		for (const rule of sortedRules) {
+			const ruleConfig = extractPageNumberingConfig([rule]);
+			if (ruleConfig) {
+				// Merge with existing config (more specific overrides less specific)
+				mergedConfig = { ...mergedConfig, ...ruleConfig };
+			}
+		}
+
+		return mergedConfig;
+	}
+
+	/**
+	 * Calculate specificity score for a @page selector
+	 * Higher score means more specific selector
+	 * 
+	 * @param {string} selector - @page selector (e.g., '', ':first', ':left', etc.)
+	 * @returns {number} Specificity score
+	 */
+	calculateSpecificity(selector) {
+		if (!selector || selector === '' || selector === '*') {
+			return 0; // Least specific
+		}
+
+		let score = 0;
+		
+		// Check for pseudo-classes
+		if (selector.includes(':first')) score += 10;
+		if (selector.includes(':left')) score += 5;
+		if (selector.includes(':right')) score += 5;
+		if (selector.includes(':blank')) score += 10;
+		
+		// Check for named pages (e.g., @page chapter)
+		if (selector && !selector.startsWith(':')) {
+			score += 3; // Named pages are more specific than generic @page
+		}
+
+		return score;
 	}
 }
 

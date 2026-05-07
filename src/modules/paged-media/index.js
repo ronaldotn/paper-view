@@ -4,6 +4,7 @@ import PrintMedia from "./print-media";
 import Splits from "./splits";
 import Counters from "./counters";
 import Lists from "./lists";
+import PageNumberingHandler from "../page-numbering/handler.js";
 
 export default [
 	AtPage,
@@ -11,5 +12,6 @@ export default [
 	PrintMedia,
 	Splits,
 	Counters,
-	Lists
+	Lists,
+	PageNumberingHandler
 ];

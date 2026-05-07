@@ -6,6 +6,7 @@ import Queue from "../utils/queue";
 import {
 	requestIdleCallback
 } from "../utils/utils";
+import PageNumberingModule from "../modules/page-numbering/index.js";
 
 const MAX_PAGES = false;
 
@@ -84,7 +85,7 @@ const TEMPLATE = `
  * @class
  */
 class Chunker {
-	constructor(content, renderTo) {
+	constructor(content, renderTo, options = {}) {
 		// this.preview = preview;
 
 		this.hooks = {};
@@ -112,6 +113,12 @@ class Chunker {
 		this.maxChars;
 
 		this.viewMode = "spread";
+
+		// Initialize page numbering module if configured
+		this.pageNumbering = null;
+		if (options.pageNumbering) {
+			this.pageNumbering = new PageNumberingModule(options.pageNumbering);
+		}
 
 		if (content) {
 			this.flow(content, renderTo);
@@ -428,6 +435,11 @@ class Chunker {
 		} else {
 			this.pages = [];
 		}
+		
+		// Update page numbering module with new total
+		if (this.pageNumbering && this.pageNumbering.isEnabled()) {
+			this.pageNumbering.updatePageCount(this.pages.length);
+		}
 	}
 
 	addPage(blank) {
@@ -441,6 +453,11 @@ class Chunker {
 		page.create(undefined, lastPage && lastPage.element);
 
 		page.index(this.total);
+
+		// Render page number if page numbering is enabled
+		if (this.pageNumbering && this.pageNumbering.isEnabled() && !blank) {
+			this.pageNumbering.renderPageNumber(page.element, this.total, this.pages.length);
+		}
 
 		if (!blank) {
 			// Listen for page overflow
@@ -538,6 +555,11 @@ class Chunker {
 	set total(num) {
 		this.pagesArea.style.setProperty("--pagedjs-page-count", num);
 		this._total = num;
+		
+		// Update page numbering module with new total
+		if (this.pageNumbering && this.pageNumbering.isEnabled()) {
+			this.pageNumbering.updatePageCount(num);
+		}
 	}
 
 	loadFonts() {
@@ -563,6 +585,88 @@ class Chunker {
 	destroy() {
 		this.pagesArea.remove();
 		this.pageTemplate.remove();
+		
+		// Clear page numbering module
+		if (this.pageNumbering) {
+			this.pageNumbering.disable();
+		}
+	}
+	
+	/**
+	 * Update page numbering configuration
+	 * @param {object} config - New page numbering configuration
+	 */
+	updatePageNumbering(config) {
+		if (!this.pageNumbering) {
+			this.pageNumbering = new PageNumberingModule(config);
+		} else {
+			this.pageNumbering.updateConfig(config);
+		}
+		
+		// If page numbering is now enabled and we have existing pages, render page numbers
+		if (this.pageNumbering.isEnabled() && this.pages.length > 0) {
+			this.pages.forEach((page, index) => {
+				if (!page.blank) {
+					this.pageNumbering.renderPageNumber(page.element, index, this.pages.length);
+				}
+			});
+		}
+	}
+	
+	/**
+	 * Get current page numbering configuration
+	 * @returns {object|null} Current page numbering configuration or null if not initialized
+	 */
+	getPageNumberingConfig() {
+		if (!this.pageNumbering) {
+			return null;
+		}
+		return this.pageNumbering.getConfig();
+	}
+	
+	/**
+	 * Enable or disable page numbering
+	 * @param {boolean} enabled - Whether to enable page numbering
+	 */
+	setPageNumberingEnabled(enabled) {
+		if (!this.pageNumbering) {
+			// Initialize with default config if not already initialized
+			this.pageNumbering = new PageNumberingModule({ enabled });
+		} else if (enabled) {
+			this.pageNumbering.enable();
+		} else {
+			this.pageNumbering.disable();
+		}
+		
+		// If enabling and we have existing pages, render page numbers
+		if (enabled && this.pageNumbering.isEnabled() && this.pages.length > 0) {
+			this.pages.forEach((page, index) => {
+				if (!page.blank) {
+					this.pageNumbering.renderPageNumber(page.element, index, this.pages.length);
+				}
+			});
+		}
+	}
+	
+	/**
+	 * Apply CSS @page rules to page numbering configuration
+	 * @param {Array} pageRules - Array of parsed CSS @page rules
+	 */
+	applyPageNumberingCSSRules(pageRules) {
+		if (!this.pageNumbering) {
+			// Initialize with default config if not already initialized
+			this.pageNumbering = new PageNumberingModule({});
+		}
+		this.pageNumbering.applyCSSRules(pageRules);
+		
+		// If page numbering is now enabled and we have existing pages, render page numbers
+		if (this.pageNumbering.isEnabled() && this.pages.length > 0) {
+			this.pages.forEach((page, index) => {
+				if (!page.blank) {
+					this.pageNumbering.renderPageNumber(page.element, index, this.pages.length);
+				}
+			});
+		}
 	}
 
 }

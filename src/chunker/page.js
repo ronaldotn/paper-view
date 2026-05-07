@@ -94,9 +94,9 @@ class Page {
 			page.classList.add("pagedjs_blank_page");
 		}
 
-		// if (pgnum === 0) {
-		// 	page.classList.add("pagedjs_first_page");
-		// }
+		if (pgnum === 0) {
+			page.classList.add("pagedjs_first_page");
+		}
 
 		if (this.viewMode !== "single") {
 			if (pgnum % 2 !== 1) {
