@@ -7,7 +7,7 @@ import {browserAgent} from "../utils/utils";
  * @class
  */
 class Page {
-	constructor(pagesArea, pageTemplate, blank, hooks) {
+	constructor(pagesArea, pageTemplate, blank, hooks, viewMode = "spread") {
 		this.pagesArea = pagesArea;
 		this.pageTemplate = pageTemplate;
 		this.blank = blank;
@@ -16,6 +16,7 @@ class Page {
 		this.height = undefined;
 
 		this.hooks = hooks;
+		this.viewMode = viewMode;
 
 		// this.element = this.create(this.pageTemplate);
 	}
@@ -97,13 +98,15 @@ class Page {
 		// 	page.classList.add("pagedjs_first_page");
 		// }
 
-		// if (pgnum % 2 !== 1) {
-		// 	page.classList.remove("pagedjs_left_page");
-		// 	page.classList.add("pagedjs_right_page");
-		// } else {
-		// 	page.classList.remove("pagedjs_right_page");
-		// 	page.classList.add("pagedjs_left_page");
-		// }
+		if (this.viewMode !== "single") {
+			if (pgnum % 2 !== 1) {
+				page.classList.remove("pagedjs_left_page");
+				page.classList.add("pagedjs_right_page");
+			} else {
+				page.classList.remove("pagedjs_right_page");
+				page.classList.add("pagedjs_left_page");
+			}
+		}
 	}
 
 	/*

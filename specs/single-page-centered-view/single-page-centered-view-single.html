@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+	<meta http-equiv="Content-Style-Type" content="text/css" />
+	<title>Single Page Centered View - Single Mode</title>
+
+	<script>
+		window.PaperViewConfig = {
+			auto: false,
+			after: async function() {
+				let previewer = new window.PaperView.Previewer({ viewMode: "single" });
+				window.__singleModePreviewer = previewer;
+				try {
+					let flow = await previewer.preview();
+					window.__previewDone = flow;
+				} catch(e) {
+					console.error("Single mode preview error:", e.message, e.stack);
+					window.__previewError = { message: e.message, stack: e.stack };
+				}
+			}
+		};
+	</script>
+
+	<script src="../../../dist/paperview.polyfill.js"></script>
+
+	<style>
+		@page {
+			size: A5;
+			margin: 20mm;
+		}
+
+		@page :left {
+			margin-left: 30mm;
+			margin-right: 15mm;
+		}
+
+		@page :right {
+			margin-left: 15mm;
+			margin-right: 30mm;
+		}
+
+		@page :first {
+			margin-top: 30mm;
+		}
+
+		section {
+			break-before: page;
+		}
+
+		h1 {
+			font-size: 2em;
+			margin-top: 0;
+		}
+
+		h2 {
+			font-size: 1.5em;
+		}
+
+		p {
+			margin-top: 0;
+			margin-bottom: 1em;
+			line-height: 1.5;
+		}
+	</style>
+</head>
+<body>
+	<section>
+		<h1>Chapter 1: Introduction</h1>
+		<p>This is the first page of the document. It contains introductory content that spans the first section of the book.</p>
+		<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+		<p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+	</section>
+
+	<section>
+		<h2>Chapter 2: Main Content</h2>
+		<p>This section begins on a new page. In spread mode, this page would receive either a left or right page class depending on its position.</p>
+		<p>In single page centered view mode, no left or right page classes should be assigned to any page element. All pages should be displayed centered without distinction between left and right pages.</p>
+		<p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
+	</section>
+
+	<section>
+		<h2>Chapter 3: Further Details</h2>
+		<p>This is the third section of the document. It provides additional details about the topic at hand.</p>
+		<p>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>
+		<p>Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.</p>
+	</section>
+
+	<section>
+		<h2>Chapter 4: Conclusion</h2>
+		<p>This final section wraps up the document. It should also appear without left or right page classes in single mode.</p>
+		<p>At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.</p>
+	</section>
+</body>
+</html>

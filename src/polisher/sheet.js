@@ -143,9 +143,21 @@ class Sheet {
 		csstree.walk(ast, {
 			visit: "Url",
 			enter: (node, item, list) => {
-				let href = node.value.value.replace(/["']/g, "");
+				// In css-tree v2, Url.value is a string directly
+				let href;
+				if (typeof node.value === "string") {
+					href = node.value.replace(/["']/g, "");
+				} else if (node.value && typeof node.value.value === "string") {
+					href = node.value.value.replace(/["']/g, "");
+				} else {
+					return;
+				}
 				let url = new URL(href, this.url);
-				node.value.value = url.toString();
+				if (typeof node.value === "string") {
+					node.value = url.toString();
+				} else {
+					node.value.value = url.toString();
+				}
 			}
 		});
 	}
@@ -253,19 +265,42 @@ class Sheet {
 			return;
 		}
 
+		// Extract URL from either String node (bare @import "url") or Url node (@import url("url"))
+		let importUrl = null;
+
 		csstree.walk(node, {
-			visit: "String",
-			enter: (urlNode, urlItem, urlList) => {
-				let href = urlNode.value.replace(/["']/g, "");
-				let url = new URL(href, this.url);
-				let value = url.toString();
-
-				this.imported.push(value);
-
-				// Remove the original
-				list.remove(item);
+			visit: "Url",
+			enter: (urlNode) => {
+				if (importUrl) return;
+				// In css-tree v2, Url.value is a string directly
+				if (typeof urlNode.value === "string") {
+					importUrl = urlNode.value.replace(/["']/g, "");
+				} else if (urlNode.value && typeof urlNode.value.value === "string") {
+					// fallback for older structure
+					importUrl = urlNode.value.value.replace(/["']/g, "");
+				}
 			}
 		});
+
+		if (!importUrl) {
+			csstree.walk(node, {
+				visit: "String",
+				enter: (strNode) => {
+					if (importUrl) return;
+					importUrl = strNode.value.replace(/["']/g, "");
+				}
+			});
+		}
+
+		if (!importUrl) return;
+
+		let url = new URL(importUrl, this.url);
+		let value = url.toString();
+
+		this.imported.push(value);
+
+		// Remove the original
+		list.remove(item);
 	}
 
 	set text(t) {

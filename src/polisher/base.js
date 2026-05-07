@@ -275,6 +275,12 @@ export default `
 	counter-reset: pages var(--pagedjs-page-count);
 }
 
+.pagedjs_pages.pagedjs_single_page_mode {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
 
 .pagedjs_pagebox .pagedjs_margin-top-left-corner,
 .pagedjs_pagebox .pagedjs_margin-top-right-corner,

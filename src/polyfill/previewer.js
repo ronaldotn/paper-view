@@ -6,8 +6,19 @@ import Polisher from "../polisher/polisher";
 import { registerHandlers, initializeHandlers } from "../utils/handlers";
 
 class Previewer {
-	constructor() {
+	constructor(options = {}) {
 		// this.preview = this.getParams("preview") !== "false";
+
+		// Determine viewMode from options
+		const { viewMode } = options;
+		if (viewMode === undefined || viewMode === null) {
+			this._viewMode = "spread";
+		} else if (viewMode === "single" || viewMode === "spread") {
+			this._viewMode = viewMode;
+		} else {
+			console.warn(`Previewer: invalid viewMode "${viewMode}". Expected "single" or "spread". Falling back to "spread".`);
+			this._viewMode = "spread";
+		}
 
 		// Process styles
 		this.polisher = new Polisher(false);
@@ -39,6 +50,19 @@ class Previewer {
 		this.chunker.on("rendering", () => {
 			this.emit("rendering", this.chunker);
 		});
+	}
+
+	get viewMode() {
+		return this._viewMode;
+	}
+
+	set viewMode(v) {
+		if (v !== "single" && v !== "spread") {
+			console.warn(`Previewer: invalid viewMode "${v}". Expected "single" or "spread". Falling back to "spread".`);
+			v = "spread";
+		}
+		this._viewMode = v;
+		this.emit("viewModeChanged", v);
 	}
 
 	initializeHandlers() {
@@ -139,6 +163,9 @@ class Previewer {
 
 		let startTime = performance.now();
 
+		// Propagate viewMode to chunker before rendering
+		this.chunker.viewMode = this._viewMode;
+
 		// Render flow
 		let flow = await this.chunker.flow(content, renderTo);
 
@@ -146,6 +173,7 @@ class Previewer {
 
 		flow.performance = (endTime - startTime);
 		flow.size = this.size;
+		flow.viewMode = this._viewMode;
 
 		this.emit("rendered", flow);
 

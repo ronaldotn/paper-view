@@ -47,6 +47,7 @@
     "chalk": "^4.1.2",
     "eslint": "^8.57.1",
     "express": "^4.21.1",
+    "fast-check": "^3.23.2",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^30.3.0",
     "jest-image-snapshot": "^6.5.2",

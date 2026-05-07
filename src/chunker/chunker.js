@@ -111,6 +111,8 @@ class Chunker {
 		this.charsPerBreak = [];
 		this.maxChars;
 
+		this.viewMode = "spread";
+
 		if (content) {
 			this.flow(content, renderTo);
 		}
@@ -119,6 +121,10 @@ class Chunker {
 	setup(renderTo) {
 		this.pagesArea = document.createElement("div");
 		this.pagesArea.classList.add("pagedjs_pages");
+
+		if (this.viewMode === "single") {
+			this.pagesArea.classList.add("pagedjs_single_page_mode");
+		}
 
 		if (renderTo) {
 			renderTo.appendChild(this.pagesArea);
@@ -253,6 +259,7 @@ class Chunker {
 	}
 
 	async handleBreaks(node) {
+		if (this.viewMode === "single") { return; }
 		let currentPage = this.total + 1;
 		let currentPosition = currentPage % 2 === 0 ? "left" : "right";
 		// TODO: Recto and Verso should reverse for rtl languages
@@ -275,6 +282,62 @@ class Chunker {
 				typeof node.dataset !== "undefined" &&
 				typeof node.dataset.breakBefore !== "undefined") {
 			breakBefore = node.dataset.breakBefore;
+		}
+
+		// Also check parent nodes for break-before (breakToken.node may be a child of the element with break-before)
+		if (!breakBefore && node) {
+			// Walk up ancestors, but only if node is the first content in that ancestor
+			let current = node;
+			let parent = node.nodeType === 3 ? node.parentNode : node.parentNode;
+			while (!breakBefore && parent && parent.nodeType === 1) {
+				// Check if current is the first meaningful child of parent
+				let isFirst = true;
+				let sibling = current.previousSibling;
+				while (sibling) {
+					if (sibling.nodeType === 3 && !sibling.textContent.trim()) {
+						sibling = sibling.previousSibling;
+						continue;
+					}
+					isFirst = false;
+					break;
+				}
+				if (!isFirst) break;
+
+				if (typeof parent.dataset !== "undefined" &&
+						typeof parent.dataset.breakBefore !== "undefined") {
+					breakBefore = parent.dataset.breakBefore;
+					break;
+				}
+				current = parent;
+				parent = parent.parentNode;
+			}
+		}
+
+		// Also check previousBreakAfter on ancestors (same first-child logic)
+		if (!previousBreakAfter && node) {
+			let current = node;
+			let parent = node.nodeType === 3 ? node.parentNode : node.parentNode;
+			while (!previousBreakAfter && parent && parent.nodeType === 1) {
+				let isFirst = true;
+				let sibling = current.previousSibling;
+				while (sibling) {
+					if (sibling.nodeType === 3 && !sibling.textContent.trim()) {
+						sibling = sibling.previousSibling;
+						continue;
+					}
+					isFirst = false;
+					break;
+				}
+				if (!isFirst) break;
+
+				if (typeof parent.dataset !== "undefined" &&
+						typeof parent.dataset.previousBreakAfter !== "undefined") {
+					previousBreakAfter = parent.dataset.previousBreakAfter;
+					break;
+				}
+				current = parent;
+				parent = parent.parentNode;
+			}
 		}
 
 		if( previousBreakAfter &&
@@ -370,7 +433,7 @@ class Chunker {
 	addPage(blank) {
 		let lastPage = this.pages[this.pages.length - 1];
 		// Create a new page from the template
-		let page = new Page(this.pagesArea, this.pageTemplate, blank, this.hooks);
+		let page = new Page(this.pagesArea, this.pageTemplate, blank, this.hooks, this.viewMode);
 
 		this.pages.push(page);
 

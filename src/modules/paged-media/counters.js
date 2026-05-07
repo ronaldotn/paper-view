@@ -51,8 +51,8 @@ class Counters extends Handler {
 
 	handleIncrement(declaration, rule) {
 		let identifier = declaration.value.children.first;
-		let number = declaration.value.children.getSize() > 1
-							&& declaration.value.children.last().value;
+		let number = declaration.value.children.size > 1
+							&& declaration.value.children.last && declaration.value.children.last.value;
 		let name = identifier && identifier.name;
 
 		if (name === "page" || name.indexOf("target-counter-") === 0) {
@@ -76,8 +76,8 @@ class Counters extends Handler {
 
 	handleReset(declaration, rule) {
 		let identifier = declaration.value.children.first;
-		let number = declaration.value.children.getSize() > 1
-							&& declaration.value.children.last().value;
+		let number = declaration.value.children.size > 1
+							&& declaration.value.children.last && declaration.value.children.last.value;
 		let name = identifier && identifier.name;
 		let selector = csstree.generate(rule.ruleNode.prelude);
 		let counter;

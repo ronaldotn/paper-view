@@ -449,15 +449,19 @@ class AtPage extends Handler {
 			pages["*"].added = true;
 		}
 		// Add :left & :right
-		if (":left" in pages && !pages[":left"].added) {
-			let left = this.createPage(pages[":left"], ast.children, sheet);
-			sheet.insertRule(left);
-			pages[":left"].added = true;
+		if (this.chunker.viewMode !== "single") {
+			if (":left" in pages && !pages[":left"].added) {
+				let left = this.createPage(pages[":left"], ast.children, sheet);
+				sheet.insertRule(left);
+				pages[":left"].added = true;
+			}
 		}
-		if (":right" in pages && !pages[":right"].added) {
-			let right = this.createPage(pages[":right"], ast.children, sheet);
-			sheet.insertRule(right);
-			pages[":right"].added = true;
+		if (this.chunker.viewMode !== "single") {
+			if (":right" in pages && !pages[":right"].added) {
+				let right = this.createPage(pages[":right"], ast.children, sheet);
+				sheet.insertRule(right);
+				pages[":right"].added = true;
+			}
 		}
 		// Add :first & :blank
 		if (":first" in pages && !pages[":first"].first) {
@@ -659,7 +663,7 @@ class AtPage extends Handler {
 				}
 			});
 
-			if(content.children.isEmpty()) {
+			if(content.children.isEmpty) {
 				continue;
 			}
 

@@ -14,7 +14,7 @@ class TargetText extends Handler {
 		if (funcNode.name === "target-text") {
 			let selector = csstree.generate(rule.ruleNode.prelude);
 			let first = funcNode.children.first;
-			let last = funcNode.children.last();
+			let last = funcNode.children.last;
 			let func = first.name;
 
 			let value = csstree.generate(funcNode);
