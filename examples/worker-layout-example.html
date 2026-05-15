@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Web Workers Layout Example - PaperView</title>
+        <link rel="stylesheet" type="text/css" href="assets/styles/paper.css" />
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+                line-height: 1.6;
+            }
+
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+
+            .controls {
+                margin: 20px 0;
+                padding: 15px;
+                background: #f5f5f5;
+                border-radius: 5px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                align-items: center;
+            }
+
+            button {
+                padding: 10px 20px;
+                background: #007acc;
+                color: white;
+                border: none;
+                border-radius: 3px;
+                cursor: pointer;
+                font-size: 14px;
+            }
+
+            button:hover {
+                background: #005a9e;
+            }
+
+            button:disabled {
+                background: #999;
+                cursor: not-allowed;
+            }
+
+            button.render-btn {
+                background: #28a745;
+            }
+
+            button.render-btn:hover {
+                background: #218838;
+            }
+
+            select, input {
+                padding: 8px 12px;
+                border-radius: 3px;
+                border: 1px solid #ccc;
+                font-size: 14px;
+            }
+
+            label {
+                font-weight: bold;
+                margin-right: 5px;
+            }
+
+            .stats {
+                margin: 15px 0;
+                padding: 15px;
+                background: #e9ecef;
+                border-radius: 5px;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 15px;
+            }
+
+            .stat-item {
+                text-align: center;
+            }
+
+            .stat-value {
+                font-size: 24px;
+                font-weight: bold;
+                color: #007acc;
+            }
+
+            .stat-label {
+                font-size: 12px;
+                color: #666;
+                text-transform: uppercase;
+            }
+
+            .comparison {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+                margin: 20px 0;
+            }
+
+            .comparison-card {
+                padding: 15px;
+                border-radius: 5px;
+                border: 1px solid #ddd;
+            }
+
+            .comparison-card.main-thread {
+                background: #fff3cd;
+                border-color: #ffc107;
+            }
+
+            .comparison-card.workers {
+                background: #d4edda;
+                border-color: #28a745;
+            }
+
+            .comparison-card h4 {
+                margin-top: 0;
+            }
+
+            .comparison-card ul {
+                margin: 10px 0;
+                padding-left: 20px;
+            }
+
+            .comparison-card li {
+                margin-bottom: 5px;
+            }
+
+            #source-content {
+                display: none;
+            }
+
+            .documentation {
+                margin-top: 30px;
+                padding: 20px;
+                background: #f8f9fa;
+                border-radius: 5px;
+            }
+
+            pre {
+                background: #f5f5f5;
+                padding: 15px;
+                border-radius: 5px;
+                overflow-x: auto;
+            }
+
+            code {
+                background: #f0f0f0;
+                padding: 2px 4px;
+                border-radius: 3px;
+                font-family: monospace;
+            }
+
+            .info-box {
+                padding: 15px;
+                background: #d1ecf1;
+                border: 1px solid #bee5eb;
+                border-radius: 5px;
+                margin: 15px 0;
+            }
+
+            .info-box h4 {
+                margin-top: 0;
+                color: #0c5460;
+            }
+
+            .worker-status {
+                display: flex;
+                gap: 10px;
+                margin: 10px 0;
+            }
+
+            .worker-indicator {
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                background: #ccc;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-weight: bold;
+                font-size: 12px;
+            }
+
+            .worker-indicator.active {
+                background: #28a745;
+                animation: pulse 1s infinite;
+            }
+
+            .worker-indicator.idle {
+                background: #6c757d;
+            }
+
+            @keyframes pulse {
+                0%, 100% { transform: scale(1); }
+                50% { transform: scale(1.1); }
+            }
+
+            .timing-results {
+                margin: 20px 0;
+                padding: 15px;
+                background: #f8f9fa;
+                border-radius: 5px;
+            }
+
+            .timing-results table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            .timing-results th,
+            .timing-results td {
+                padding: 8px;
+                text-align: left;
+                border-bottom: 1px solid #ddd;
+            }
+
+            .timing-results th {
+                background: #e9ecef;
+            }
+
+            .timing-results .faster {
+                color: #28a745;
+                font-weight: bold;
+            }
+
+            .timing-results .slower {
+                color: #dc3545;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container" id="source-content">
+            <header>
+                <h1>Web Workers for Layout</h1>
+                <p class="subtitle">Offload layout calculations to background threads</p>
+            </header>
+
+            <section class="chapter">
+                <h2>How Web Workers Help</h2>
+                <p>
+                    Layout calculations in paged media can be computationally
+                    intensive, especially for documents with complex content,
+                    many images, or large amounts of text. By moving these
+                    calculations to Web Workers, we keep the main thread
+                    responsive for user interactions.
+                </p>
+                <p>
+                    The worker-based approach serializes the DOM content and
+                    sends it to background workers for analysis. Workers
+                    calculate break points, detect overflow, and determine
+                    where content should split across pages. The main thread
+                    then applies these decisions to the actual DOM.
+                </p>
+            </section>
+        </div>
+
+        <div class="container">
+            <h1>Web Workers Layout Example</h1>
+            <p>
+                Compare rendering with and without Web Workers to see the
+                performance difference.
+            </p>
+
+            <div class="comparison">
+                <div class="comparison-card main-thread">
+                    <h4>Main Thread (Traditional)</h4>
+                    <ul>
+                        <li>All calculations on main thread</li>
+                        <li>UI may freeze during layout</li>
+                        <li>Single-threaded processing</li>
+                        <li>Simple implementation</li>
+                    </ul>
+                </div>
+                <div class="comparison-card workers">
+                    <h4>Web Workers (New)</h4>
+                    <ul>
+                        <li>Layout in background threads</li>
+                        <li>UI stays responsive</li>
+                        <li>Parallel processing possible</li>
+                        <li>Better for large documents</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="controls">
+                <label for="pageCount">Pages:</label>
+                <select id="pageCount">
+                    <option value="20">20 pages</option>
+                    <option value="50" selected>50 pages</option>
+                    <option value="100">100 pages</option>
+                </select>
+
+                <label for="workerCount">Workers:</label>
+                <select id="workerCount">
+                    <option value="1">1 worker</option>
+                    <option value="2" selected>2 workers</option>
+                    <option value="4">4 workers</option>
+                    <option value="8">8 workers</option>
+                </select>
+
+                <button id="renderMainBtn">
+                    Render (Main Thread)
+                </button>
+
+                <button id="renderWorkerBtn" class="render-btn">
+                    Render (Workers)
+                </button>
+            </div>
+
+            <div class="worker-status" id="workerStatus" style="display: none;">
+                <span style="font-weight: bold; margin-right: 10px;">Workers:</span>
+            </div>
+
+            <div class="stats" id="stats" style="display: none;">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalPages">0</div>
+                    <div class="stat-label">Total Pages</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="renderTime">0ms</div>
+                    <div class="stat-label">Render Time</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="mode">-</div>
+                    <div class="stat-label">Mode</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="activeWorkers">0</div>
+                    <div class="stat-label">Active Workers</div>
+                </div>
+            </div>
+
+            <div class="info-box" id="infoBox" style="display: none;">
+                <h4 id="infoTitle">Rendering...</h4>
+                <p id="infoText">Please wait while the document is being processed.</p>
+            </div>
+
+            <div id="renderTo"></div>
+
+            <div class="timing-results" id="timingResults" style="display: none;">
+                <h3>Performance Comparison</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Mode</th>
+                            <th>Pages</th>
+                            <th>Time</th>
+                            <th>Workers</th>
+                        </tr>
+                    </thead>
+                    <tbody id="timingBody">
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="documentation">
+                <h3>Usage</h3>
+                <pre><code>// Enable Web Workers for layout
+const previewer = new PaperView.Previewer({
+    viewMode: "single",
+    useWorkers: true,
+    workerOptions: {
+        workerCount: 2  // Number of workers (default: 2)
+    }
+});
+
+// Listen for worker events
+previewer.on("workersReady", (data) => {
+    console.log(`${data.workerCount} workers ready`);
+});
+
+previewer.on("workerTaskComplete", (data) => {
+    console.log(`Task ${data.taskId} completed in ${data.duration}ms`);
+});
+
+// Get worker stats
+const stats = previewer.getWorkerStats();
+console.log(stats);
+// {
+//   workerCount: 2,
+//   readyWorkers: 2,
+//   initialized: true,
+//   activeTasks: 0,
+//   queuedTasks: 0,
+//   busyWorkers: 0,
+//   idleWorkers: 2
+// }
+
+// Render as usual
+const flow = await previewer.preview(content, renderTo, stylesheets);</code></pre>
+
+                <h3>Architecture</h3>
+                <ol>
+                    <li><strong>LayoutWorkerManager:</strong> Manages a pool of Web Workers</li>
+                    <li><strong>layout.worker.js:</strong> Worker script that processes layout tasks</li>
+                    <li><strong>Task Queue:</strong> Tasks are queued and distributed to available workers</li>
+                    <li><strong>Serialization:</strong> DOM content is serialized for worker processing</li>
+                    <li><strong>Result Application:</strong> Main thread applies worker results to DOM</li>
+                </ol>
+            </div>
+        </div>
+
+        <script src="../dist/paperview.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const sourceContent = document.getElementById("source-content");
+                const renderToElement = document.getElementById("renderTo");
+                const renderMainBtn = document.getElementById("renderMainBtn");
+                const renderWorkerBtn = document.getElementById("renderWorkerBtn");
+                const pageCountSelect = document.getElementById("pageCount");
+                const workerCountSelect = document.getElementById("workerCount");
+                const statsDiv = document.getElementById("stats");
+                const infoBox = document.getElementById("infoBox");
+                const infoTitle = document.getElementById("infoTitle");
+                const infoText = document.getElementById("infoText");
+                const workerStatus = document.getElementById("workerStatus");
+                const timingResults = document.getElementById("timingResults");
+                const timingBody = document.getElementById("timingBody");
+
+                let previewer = null;
+                let flow = null;
+                let timings = [];
+
+                function generateContent(pageCount) {
+                    let content = "";
+                    for (let i = 0; i < pageCount; i++) {
+                        content += `
+                            <section class="chapter">
+                                <h2>Page ${i + 1}: Content Section</h2>
+                                <p>
+                                    This is page ${i + 1} of ${pageCount}. Lorem ipsum dolor sit amet,
+                                    consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut
+                                    labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+                                    exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                                </p>
+                                <p>
+                                    Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
+                                    dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+                                    proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+                                </p>
+                                <p>
+                                    Sed ut perspiciatis unde omnis iste natus error sit voluptatem
+                                    accusantium doloremque laudantium, totam rem aperiam, eaque ipsa
+                                    quae ab illo inventore veritatis et quasi architecto beatae vitae
+                                    dicta sunt explicabo.
+                                </p>
+                            </section>
+                        `;
+                    }
+                    return content;
+                }
+
+                function updateWorkerStatus(stats) {
+                    if (!stats) return;
+
+                    workerStatus.innerHTML = '<span style="font-weight: bold; margin-right: 10px;">Workers:</span>';
+
+                    for (let i = 0; i < stats.workerCount; i++) {
+                        const indicator = document.createElement("div");
+                        indicator.className = "worker-indicator";
+                        indicator.textContent = i + 1;
+
+                        if (i < stats.busyWorkers) {
+                            indicator.classList.add("active");
+                        } else {
+                            indicator.classList.add("idle");
+                        }
+
+                        workerStatus.appendChild(indicator);
+                    }
+                }
+
+                function renderDocument(useWorkers) {
+                    if (previewer) {
+                        previewer.destroy();
+                    }
+
+                    const pageCount = parseInt(pageCountSelect.value, 10);
+                    const workerCount = parseInt(workerCountSelect.value, 10);
+
+                    const content = generateContent(pageCount);
+                    const template = document.createElement("template");
+                    template.innerHTML = content;
+
+                    statsDiv.style.display = "none";
+                    infoBox.style.display = "none";
+                    workerStatus.style.display = "none";
+
+                    const btn = useWorkers ? renderWorkerBtn : renderMainBtn;
+                    btn.disabled = true;
+                    btn.textContent = "Rendering...";
+
+                    infoBox.style.display = "block";
+                    infoTitle.textContent = useWorkers ? "Initializing workers..." : "Rendering on main thread...";
+                    infoText.textContent = "Please wait while the document is being processed.";
+
+                    const options = {
+                        viewMode: "single"
+                    };
+
+                    if (useWorkers) {
+                        options.useWorkers = true;
+                        options.workerOptions = {
+                            workerCount: workerCount
+                        };
+                    }
+
+                    previewer = new PaperView.Previewer(options);
+
+                    if (useWorkers) {
+                        previewer.on("workersReady", (data) => {
+                            infoTitle.textContent = "Workers ready, rendering...";
+                            workerStatus.style.display = "flex";
+                            updateWorkerStatus(previewer.getWorkerStats());
+                        });
+
+                        previewer.on("workerTaskComplete", (data) => {
+                            const stats = previewer.getWorkerStats();
+                            if (stats) {
+                                updateWorkerStatus(stats);
+                                document.getElementById("activeWorkers").textContent = stats.busyWorkers;
+                            }
+                        });
+                    }
+
+                    const startTime = performance.now();
+
+                    previewer.preview(template.content, renderToElement, ["assets/styles/paper.css"])
+                        .then((result) => {
+                            flow = result;
+                            const endTime = performance.now();
+                            const duration = Math.round(endTime - startTime);
+
+                            statsDiv.style.display = "grid";
+                            document.getElementById("totalPages").textContent = flow.total;
+                            document.getElementById("renderTime").textContent = duration + "ms";
+                            document.getElementById("mode").textContent = useWorkers ? "Workers" : "Main";
+
+                            if (useWorkers) {
+                                const stats = previewer.getWorkerStats();
+                                if (stats) {
+                                    document.getElementById("activeWorkers").textContent = stats.busyWorkers;
+                                    updateWorkerStatus(stats);
+                                }
+                            }
+
+                            infoBox.style.display = "block";
+                            infoTitle.textContent = "Rendering complete!";
+                            infoText.textContent = `Rendered ${flow.total} pages in ${duration}ms using ${useWorkers ? "Web Workers" : "main thread"}.`;
+
+                            timings.push({
+                                mode: useWorkers ? "Workers" : "Main",
+                                pages: flow.total,
+                                time: duration,
+                                workers: useWorkers ? workerCount : "-"
+                            });
+
+                            updateTimingTable();
+
+                            btn.disabled = false;
+                            btn.textContent = useWorkers ? "Render (Workers)" : "Render (Main Thread)";
+                        })
+                        .catch((error) => {
+                            console.error("Error:", error);
+                            infoBox.style.display = "block";
+                            infoTitle.textContent = "Error";
+                            infoText.textContent = `Error: ${error.message}`;
+
+                            btn.disabled = false;
+                            btn.textContent = useWorkers ? "Render (Workers)" : "Render (Main Thread)";
+                        });
+                }
+
+                function updateTimingTable() {
+                    if (timings.length === 0) {
+                        timingResults.style.display = "none";
+                        return;
+                    }
+
+                    timingResults.style.display = "block";
+                    timingBody.innerHTML = "";
+
+                    for (const timing of timings) {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${timing.mode}</td>
+                            <td>${timing.pages}</td>
+                            <td class="${timing.mode === "Workers" ? "faster" : ""}">${timing.time}ms</td>
+                            <td>${timing.workers}</td>
+                        `;
+                        timingBody.appendChild(row);
+                    }
+                }
+
+                renderMainBtn.addEventListener("click", () => {
+                    renderDocument(false);
+                });
+
+                renderWorkerBtn.addEventListener("click", () => {
+                    renderDocument(true);
+                });
+
+                window.addEventListener("beforeunload", () => {
+                    if (previewer) {
+                        previewer.destroy();
+                    }
+                });
+            });
+        </script>
+    </body>
+</html>

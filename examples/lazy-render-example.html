@@ -1,0 +1,554 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Lazy Rendering Example - PaperView</title>
+        <link rel="stylesheet" type="text/css" href="assets/styles/paper.css" />
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+                line-height: 1.6;
+            }
+
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+
+            .controls {
+                margin: 20px 0;
+                padding: 15px;
+                background: #f5f5f5;
+                border-radius: 5px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                align-items: center;
+            }
+
+            button {
+                padding: 10px 20px;
+                background: #007acc;
+                color: white;
+                border: none;
+                border-radius: 3px;
+                cursor: pointer;
+                font-size: 14px;
+            }
+
+            button:hover {
+                background: #005a9e;
+            }
+
+            button:disabled {
+                background: #999;
+                cursor: not-allowed;
+            }
+
+            button.render-btn {
+                background: #28a745;
+            }
+
+            button.render-btn:hover {
+                background: #218838;
+            }
+
+            select, input {
+                padding: 8px 12px;
+                border-radius: 3px;
+                border: 1px solid #ccc;
+                font-size: 14px;
+            }
+
+            label {
+                font-weight: bold;
+                margin-right: 5px;
+            }
+
+            .stats {
+                margin: 15px 0;
+                padding: 15px;
+                background: #e9ecef;
+                border-radius: 5px;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 15px;
+            }
+
+            .stat-item {
+                text-align: center;
+            }
+
+            .stat-value {
+                font-size: 24px;
+                font-weight: bold;
+                color: #007acc;
+            }
+
+            .stat-label {
+                font-size: 12px;
+                color: #666;
+                text-transform: uppercase;
+            }
+
+            .progress-bar {
+                width: 100%;
+                height: 20px;
+                background: #e9ecef;
+                border-radius: 10px;
+                overflow: hidden;
+                margin: 10px 0;
+            }
+
+            .progress-fill {
+                height: 100%;
+                background: linear-gradient(90deg, #28a745, #20c997);
+                width: 0%;
+                transition: width 0.3s ease;
+            }
+
+            #source-content {
+                display: none;
+            }
+
+            .documentation {
+                margin-top: 30px;
+                padding: 20px;
+                background: #f8f9fa;
+                border-radius: 5px;
+            }
+
+            pre {
+                background: #f5f5f5;
+                padding: 15px;
+                border-radius: 5px;
+                overflow-x: auto;
+            }
+
+            code {
+                background: #f0f0f0;
+                padding: 2px 4px;
+                border-radius: 3px;
+                font-family: monospace;
+            }
+
+            .comparison {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+                margin: 20px 0;
+            }
+
+            .comparison-card {
+                padding: 15px;
+                border-radius: 5px;
+                border: 1px solid #ddd;
+            }
+
+            .comparison-card.eager {
+                background: #fff3cd;
+                border-color: #ffc107;
+            }
+
+            .comparison-card.lazy {
+                background: #d4edda;
+                border-color: #28a745;
+            }
+
+            .comparison-card h4 {
+                margin-top: 0;
+            }
+
+            .comparison-card ul {
+                margin: 10px 0;
+                padding-left: 20px;
+            }
+
+            .comparison-card li {
+                margin-bottom: 5px;
+            }
+
+            #renderTo {
+                margin-top: 20px;
+            }
+
+            .info-box {
+                padding: 15px;
+                background: #d1ecf1;
+                border: 1px solid #bee5eb;
+                border-radius: 5px;
+                margin: 15px 0;
+            }
+
+            .info-box h4 {
+                margin-top: 0;
+                color: #0c5460;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container" id="source-content">
+            <header>
+                <h1>Lazy Rendering Performance Test</h1>
+                <p class="subtitle">100+ Pages Document</p>
+            </header>
+
+            <section class="chapter">
+                <h2>Introduction to Lazy Rendering</h2>
+                <p>
+                    Lazy rendering is a performance optimization technique that
+                    only renders pages when they enter the viewport. This is
+                    especially useful for large documents with 100+ pages, where
+                    rendering all pages at once would cause significant memory
+                    usage and slow initial load times.
+                </p>
+                <p>
+                    With lazy rendering, the document is chunked in the background
+                    to determine page breaks, but only the pages visible in the
+                    viewport (plus a configurable buffer) are actually rendered
+                    in the DOM. Pages outside the viewport are shown as lightweight
+                    placeholders.
+                </p>
+            </section>
+
+        </div>
+
+        <div class="container">
+            <h1>Lazy Rendering Example</h1>
+            <p>
+                This example demonstrates lazy rendering with a 100+ page document.
+                Scroll through the pages and observe how only visible pages are rendered.
+            </p>
+
+            <div class="comparison">
+                <div class="comparison-card eager">
+                    <h4>Eager Rendering (Traditional)</h4>
+                    <ul>
+                        <li>All pages rendered at once</li>
+                        <li>High memory usage</li>
+                        <li>Slow initial load for large docs</li>
+                        <li>Browser may freeze during render</li>
+                    </ul>
+                </div>
+                <div class="comparison-card lazy">
+                    <h4>Lazy Rendering (New)</h4>
+                    <ul>
+                        <li>Only visible pages rendered</li>
+                        <li>Low memory footprint</li>
+                        <li>Fast initial load</li>
+                        <li>Smooth scrolling experience</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="controls">
+                <label for="pageCount">Pages:</label>
+                <select id="pageCount">
+                    <option value="50">50 pages</option>
+                    <option value="100" selected>100 pages</option>
+                    <option value="200">200 pages</option>
+                    <option value="500">500 pages</option>
+                </select>
+
+                <label for="bufferPages">Buffer:</label>
+                <select id="bufferPages">
+                    <option value="1">1 page</option>
+                    <option value="3" selected>3 pages</option>
+                    <option value="5">5 pages</option>
+                    <option value="10">10 pages</option>
+                </select>
+
+                <label for="enableUnload">Unload:</label>
+                <select id="enableUnload">
+                    <option value="true" selected>Enabled</option>
+                    <option value="false">Disabled</option>
+                </select>
+
+                <button id="renderBtn" class="render-btn">
+                    Render Document
+                </button>
+
+                <button id="scrollToBtn" disabled>
+                    Scroll to Page
+                </button>
+
+                <input type="number" id="scrollPage" value="50" min="1" style="width: 80px;" />
+            </div>
+
+            <div class="stats" id="stats" style="display: none;">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalPages">0</div>
+                    <div class="stat-label">Total Pages</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="renderedPages">0</div>
+                    <div class="stat-label">Rendered Pages</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="renderProgress">0%</div>
+                    <div class="stat-label">Render Progress</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="renderTime">0ms</div>
+                    <div class="stat-label">Chunk Time</div>
+                </div>
+            </div>
+
+            <div class="progress-bar" id="progressBar" style="display: none;">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <div class="info-box" id="infoBox" style="display: none;">
+                <h4>Lazy Rendering Active</h4>
+                <p id="infoText">Scroll through the document to see pages render on-demand.</p>
+            </div>
+
+            <div id="renderTo"></div>
+
+            <div class="documentation">
+                <h3>Usage</h3>
+                <pre><code>// Enable lazy rendering
+const previewer = new PaperView.Previewer({
+    viewMode: "single",
+    lazyRender: true,
+    lazyRenderOptions: {
+        bufferPages: 3,        // Pages to render around viewport
+        unloadPages: 5,        // Pages away before unloading
+        enableUnload: true,    // Unload pages when out of view
+        onPageRender: (index, data) => {
+            console.log(`Page ${index + 1} rendered`);
+        },
+        onPageUnload: (index, data) => {
+            console.log(`Page ${index + 1} unloaded`);
+        }
+    }
+});
+
+// Preview with lazy rendering
+const flow = await previewer.preview(content, renderTo, stylesheets);
+
+// Get render info
+const info = previewer.getLazyRenderInfo();
+console.log(info);
+// { totalPages: 150, renderedPages: 12, progress: 8, chunkingComplete: true }
+
+// Scroll to specific page
+previewer.scrollToPage(50);  // By index
+previewer.scrollToPageNumber(51);  // By page number
+
+// Events
+previewer.on("chunkingComplete", (data) => {
+    console.log(`Chunked ${data.totalPages} pages`);
+});
+
+previewer.on("lazyPageRendered", (data) => {
+    console.log(`Page ${data.index + 1} rendered`);
+});
+
+previewer.on("lazyPageUnloaded", (data) => {
+    console.log(`Page ${data.index + 1} unloaded`);
+});</code></pre>
+
+                <h3>How It Works</h3>
+                <ol>
+                    <li><strong>Background Chunking:</strong> The document is chunked in a hidden container to determine all page breaks.</li>
+                    <li><strong>Placeholder Creation:</strong> Lightweight placeholders are created for all pages in the visible container.</li>
+                    <li><strong>IntersectionObserver:</strong> Monitors which pages enter/leave the viewport.</li>
+                    <li><strong>On-Demand Rendering:</strong> Pages are rendered only when they enter the viewport (plus buffer).</li>
+                    <li><strong>Memory Management:</strong> Pages can be unloaded when they move far from the viewport.</li>
+                </ol>
+            </div>
+        </div>
+
+        <script src="../dist/paperview.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const sourceContent = document.getElementById("source-content");
+                const renderToElement = document.getElementById("renderTo");
+                const renderBtn = document.getElementById("renderBtn");
+                const scrollToBtn = document.getElementById("scrollToBtn");
+                const pageCountSelect = document.getElementById("pageCount");
+                const bufferPagesSelect = document.getElementById("bufferPages");
+                const enableUnloadSelect = document.getElementById("enableUnload");
+                const scrollPageInput = document.getElementById("scrollPage");
+                const statsDiv = document.getElementById("stats");
+                const progressBar = document.getElementById("progressBar");
+                const progressFill = document.getElementById("progressFill");
+                const infoBox = document.getElementById("infoBox");
+                const infoText = document.getElementById("infoText");
+
+                let previewer = null;
+                let flow = null;
+                let updateInterval = null;
+
+                function generateContent(pageCount) {
+                    let content = "";
+                    const chapters = [
+                        "Introduction",
+                        "Getting Started",
+                        "Core Concepts",
+                        "Advanced Features",
+                        "Performance Optimization",
+                        "Best Practices",
+                        "API Reference",
+                        "Troubleshooting",
+                        "Migration Guide",
+                        "Conclusion"
+                    ];
+
+                    for (let i = 0; i < pageCount; i++) {
+                        const chapterIndex = Math.floor(i / (pageCount / chapters.length));
+                        const chapter = chapters[Math.min(chapterIndex, chapters.length - 1)];
+
+                        content += `
+                            <section class="chapter">
+                                <h2>Page ${i + 1}: ${chapter}</h2>
+                                <p>
+                                    This is page ${i + 1} of ${pageCount}. Lorem ipsum dolor sit amet,
+                                    consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut
+                                    labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+                                    exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                                </p>
+                                <p>
+                                    Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
+                                    dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+                                    proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+                                </p>
+                                <p>
+                                    Sed ut perspiciatis unde omnis iste natus error sit voluptatem
+                                    accusantium doloremque laudantium, totam rem aperiam, eaque ipsa
+                                    quae ab illo inventore veritatis et quasi architecto beatae vitae
+                                    dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit
+                                    aspernatur aut odit aut fugit.
+                                </p>
+                                <p>
+                                    At vero eos et accusamus et iusto odio dignissimos ducimus qui
+                                    blanditiis praesentium voluptatum deleniti atque corrupti quos
+                                    dolores et quas molestias excepturi sint occaecati cupiditate non
+                                    provident, similique sunt in culpa qui officia deserunt mollitia
+                                    animi, id est laborum et dolorum fuga.
+                                </p>
+                            </section>
+                        `;
+                    }
+
+                    return content;
+                }
+
+                function updateStats() {
+                    if (!flow || !flow.lazyRenderer) return;
+
+                    const info = previewer.getLazyRenderInfo();
+                    document.getElementById("totalPages").textContent = info.totalPages;
+                    document.getElementById("renderedPages").textContent = info.renderedPages;
+                    document.getElementById("renderProgress").textContent = info.progress + "%";
+                    progressFill.style.width = info.progress + "%";
+                }
+
+                function renderDocument() {
+                    if (previewer) {
+                        previewer.destroy();
+                    }
+
+                    if (updateInterval) {
+                        clearInterval(updateInterval);
+                    }
+
+                    const pageCount = parseInt(pageCountSelect.value, 10);
+                    const bufferPages = parseInt(bufferPagesSelect.value, 10);
+                    const enableUnload = enableUnloadSelect.value === "true";
+
+                    const content = generateContent(pageCount);
+                    const template = document.createElement("template");
+                    template.innerHTML = content;
+
+                    statsDiv.style.display = "none";
+                    progressBar.style.display = "none";
+                    infoBox.style.display = "none";
+                    scrollToBtn.disabled = true;
+
+                    renderBtn.disabled = true;
+                    renderBtn.textContent = "Chunking...";
+
+                    previewer = new PaperView.Previewer({
+                        viewMode: "single",
+                        lazyRender: true,
+                        lazyRenderOptions: {
+                            bufferPages: bufferPages,
+                            unloadPages: bufferPages + 2,
+                            enableUnload: enableUnload,
+                            onPageRender: (index, data) => {
+                                console.log(`Page ${index + 1} rendered`);
+                            },
+                            onPageUnload: (index, data) => {
+                                console.log(`Page ${index + 1} unloaded`);
+                            }
+                        }
+                    });
+
+                    previewer.on("chunkingComplete", (data) => {
+                        console.log(`Chunked ${data.totalPages} pages`);
+                        renderBtn.textContent = "Render Document";
+                        renderBtn.disabled = false;
+                        scrollToBtn.disabled = false;
+                        statsDiv.style.display = "grid";
+                        progressBar.style.display = "block";
+                        infoBox.style.display = "block";
+                        infoText.textContent = `Document chunked with ${data.totalPages} pages. Scroll to render pages on-demand.`;
+
+                        updateStats();
+                        updateInterval = setInterval(updateStats, 500);
+                    });
+
+                    previewer.on("lazyPageRendered", (data) => {
+                        updateStats();
+                    });
+
+                    previewer.on("lazyPageUnloaded", (data) => {
+                        updateStats();
+                    });
+
+                    const startTime = performance.now();
+
+                    previewer.preview(template.content, renderToElement, ["assets/styles/paper.css"])
+                        .then((result) => {
+                            flow = result;
+                            const endTime = performance.now();
+                            document.getElementById("renderTime").textContent =
+                                Math.round(endTime - startTime) + "ms";
+
+                            updateStats();
+                        })
+                        .catch((error) => {
+                            console.error("Error:", error);
+                            renderBtn.textContent = "Render Document";
+                            renderBtn.disabled = false;
+                            infoBox.style.display = "block";
+                            infoText.textContent = `Error: ${error.message}`;
+                        });
+                }
+
+                renderBtn.addEventListener("click", renderDocument);
+
+                scrollToBtn.addEventListener("click", () => {
+                    const pageNum = parseInt(scrollPageInput.value, 10);
+                    if (pageNum > 0 && pageNum <= flow.totalPages) {
+                        previewer.scrollToPageNumber(pageNum);
+                        infoText.textContent = `Scrolled to page ${pageNum}`;
+                    }
+                });
+
+                window.addEventListener("beforeunload", () => {
+                    if (previewer) {
+                        previewer.destroy();
+                    }
+                    if (updateInterval) {
+                        clearInterval(updateInterval);
+                    }
+                });
+            });
+        </script>
+    </body>
+</html>

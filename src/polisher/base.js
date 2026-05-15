@@ -450,6 +450,38 @@ export default `
 }
 
 img {
+	max-width: 100%;
+	height: auto;
+	object-fit: contain;
+}
+
+.pagedjs_pagebox .pagedjs_area img,
+.pagedjs_page_content img {
+	max-width: 100%;
+	max-height: 100%;
+	height: auto;
+	object-fit: contain;
+}
+
+figure {
+	margin: 0;
+}
+
+figure img {
+	max-width: 100%;
+	height: auto;
+	object-fit: contain;
+}
+
+svg {
+	max-width: 100%;
+	height: auto;
+}
+
+video,
+canvas,
+iframe {
+	max-width: 100%;
 	height: auto;
 }
 

@@ -7,6 +7,7 @@ import {
 	requestIdleCallback
 } from "../utils/utils";
 import PageNumberingModule from "../modules/page-numbering/index.js";
+import LayoutWorkerManager from "./layout-worker-manager.js";
 
 const MAX_PAGES = false;
 
@@ -114,6 +115,12 @@ class Chunker {
 
 		this.viewMode = "spread";
 
+		// Worker options
+		const { useWorkers, workerOptions } = options;
+		this._useWorkers = useWorkers === true;
+		this._workerOptions = workerOptions || {};
+		this.layoutWorkerManager = null;
+
 		// Initialize page numbering module if configured
 		this.pageNumbering = null;
 		if (options.pageNumbering) {
@@ -123,6 +130,14 @@ class Chunker {
 		if (content) {
 			this.flow(content, renderTo);
 		}
+	}
+
+	get useWorkers() {
+		return this._useWorkers;
+	}
+
+	set useWorkers(value) {
+		this._useWorkers = value === true;
 	}
 
 	setup(renderTo) {
@@ -164,6 +179,11 @@ class Chunker {
 			this.setup(renderTo);
 		}
 
+		// Initialize workers if enabled
+		if (this._useWorkers) {
+			await this.initWorkers();
+		}
+
 		this.emit("rendering", content);
 
 		await this.hooks.afterParsed.trigger(parsed, this);
@@ -183,6 +203,35 @@ class Chunker {
 		this.emit("rendered", this.pages);
 
 		return this;
+	}
+
+	async initWorkers() {
+		if (this.layoutWorkerManager) {
+			return;
+		}
+
+		this.layoutWorkerManager = new LayoutWorkerManager(this._workerOptions);
+
+		this.layoutWorkerManager.on("ready", (data) => {
+			this.emit("workersReady", data);
+		});
+
+		this.layoutWorkerManager.on("taskComplete", (data) => {
+			this.emit("workerTaskComplete", data);
+		});
+
+		this.layoutWorkerManager.on("taskError", (data) => {
+			this.emit("workerTaskError", data);
+		});
+
+		await this.layoutWorkerManager.initialize();
+	}
+
+	getWorkerStats() {
+		if (!this.layoutWorkerManager) {
+			return null;
+		}
+		return this.layoutWorkerManager.getStats();
 	}
 
 	// oversetPages() {
@@ -585,7 +634,13 @@ class Chunker {
 	destroy() {
 		this.pagesArea.remove();
 		this.pageTemplate.remove();
-		
+
+		// Terminate workers
+		if (this.layoutWorkerManager) {
+			this.layoutWorkerManager.terminate();
+			this.layoutWorkerManager = null;
+		}
+
 		// Clear page numbering module
 		if (this.pageNumbering) {
 			this.pageNumbering.disable();

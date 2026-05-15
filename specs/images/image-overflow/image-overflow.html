@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Image Overflow Handling</title>
+    <script src="/dist/paperview.js"></script>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .chapter {
+            page-break-after: always;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .image-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .image-caption {
+            font-size: 12px;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        figure {
+            margin: 20px 0;
+        }
+
+        figcaption {
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <template id="content">
+        <section class="chapter">
+            <h1>Image Overflow Handling</h1>
+            <p>
+                This test demonstrates automatic image overflow handling. Images that
+                exceed the page area are automatically constrained to fit within the
+                content area while maintaining their aspect ratio.
+            </p>
+
+            <div class="image-container">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='800' viewBox='0 0 1200 800'%3E%3Crect fill='%234CAF50' width='1200' height='800'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='48' font-family='Arial'%3ELarge Image (1200x800)%3C/text%3E%3C/svg%3E" alt="Large test image">
+                <div class="image-caption">This image is 1200x800 pixels and should be constrained to fit the page.</div>
+            </div>
+        </section>
+
+        <section class="chapter">
+            <h1>Tall Image Test</h1>
+            <p>
+                This page contains a very tall image that should be constrained to
+                fit within the page height.
+            </p>
+
+            <figure>
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='1500' viewBox='0 0 600 1500'%3E%3Crect fill='%232196F3' width='600' height='1500'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='48' font-family='Arial'%3ETall Image%3C/text%3E%3Ctext x='50%25' y='60%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='36' font-family='Arial'%3E(600x1500)%3C/text%3E%3C/svg%3E" alt="Tall test image">
+                <figcaption>This tall image (600x1500) should be scaled down to fit the page height.</figcaption>
+            </figure>
+        </section>
+
+        <section class="chapter">
+            <h1>Multiple Images Test</h1>
+            <p>
+                This page contains multiple images that should all be constrained
+                appropriately.
+            </p>
+
+            <div class="image-container">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='600' viewBox='0 0 800 600'%3E%3Crect fill='%23FF9800' width='800' height='600'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='48' font-family='Arial'%3EImage 1 (800x600)%3C/text%3E%3C/svg%3E" alt="Test image 1">
+                <div class="image-caption">Image 1: 800x600</div>
+            </div>
+
+            <div class="image-container">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1000' height='400' viewBox='0 0 1000 400'%3E%3Crect fill='%239C27B0' width='1000' height='400'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='white' font-size='48' font-family='Arial'%3EImage 2 (1000x400)%3C/text%3E%3C/svg%3E" alt="Test image 2">
+                <div class="image-caption">Image 2: 1000x400</div>
+            </div>
+        </section>
+    </template>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const content = document.getElementById("content");
+            const previewer = new PaperView.Previewer({ viewMode: "single" });
+
+            previewer.preview(content, document.body, []).then((flow) => {
+                console.log("Rendering " + flow.total + " pages took " + flow.performance + " milliseconds.");
+
+                if (window.onRendered) {
+                    window.onRendered(flow.total);
+                }
+            }).catch((err) => {
+                console.error("Preview error:", err);
+                window.__previewError = err.message;
+            });
+        });
+    </script>
+</body>
+</html>

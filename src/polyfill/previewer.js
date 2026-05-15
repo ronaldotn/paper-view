@@ -3,6 +3,7 @@ import EventEmitter from "event-emitter";
 import Chunker from "../chunker/chunker";
 import Polisher from "../polisher/polisher";
 import PDFExporter from "../export/index.js";
+import LazyRenderer from "./lazy-renderer.js";
 
 import { registerHandlers, initializeHandlers } from "../utils/handlers";
 
@@ -21,17 +22,36 @@ class Previewer {
 			this._viewMode = "spread";
 		}
 
+		// Lazy rendering options
+		const { lazyRender, lazyRenderOptions } = options;
+		this._lazyRender = lazyRender === true;
+		this._lazyRenderOptions = lazyRenderOptions || {};
+
+		// Worker options
+		const { useWorkers, workerOptions } = options;
+		this._useWorkers = useWorkers === true;
+		this._workerOptions = workerOptions || {};
+
 		// Process styles
 		this.polisher = new Polisher(false);
 
 		// Chunk contents
 		this.chunker = new Chunker();
 
+		// Apply worker options if provided
+		if (this._useWorkers || this._workerOptions) {
+			this.chunker._useWorkers = this._useWorkers;
+			this.chunker._workerOptions = this._workerOptions;
+		}
+
 		// Hooks
 		this.hooks = {};
 
 		// PDF Exporter
 		this.pdfExporter = new PDFExporter(this);
+
+		// Lazy Renderer
+		this.lazyRenderer = null;
 
 		// Rendered state
 		this.rendered = false;
@@ -57,6 +77,29 @@ class Previewer {
 		this.chunker.on("rendering", () => {
 			this.emit("rendering", this.chunker);
 		});
+
+		this.chunker.on("workersReady", (data) => {
+			this.emit("workersReady", data);
+		});
+
+		this.chunker.on("workerTaskComplete", (data) => {
+			this.emit("workerTaskComplete", data);
+		});
+
+		this.chunker.on("workerTaskError", (data) => {
+			this.emit("workerTaskError", data);
+		});
+	}
+
+	get useWorkers() {
+		return this._useWorkers;
+	}
+
+	set useWorkers(value) {
+		this._useWorkers = value === true;
+		if (this.chunker) {
+			this.chunker.useWorkers = this._useWorkers;
+		}
 	}
 
 	get viewMode() {
@@ -146,6 +189,10 @@ class Previewer {
 	}
 
 	async preview(contentFrom, renderTo, stylesheets) {
+		if (this._lazyRender) {
+			return this.previewLazy(contentFrom, renderTo, stylesheets);
+		}
+
 		let content;
 		if (typeof contentFrom === "string") {
 			content = contentFrom;
@@ -189,8 +236,112 @@ class Previewer {
 		return flow;
 	}
 
+	async previewLazy(contentFrom, renderTo, stylesheets) {
+		let content;
+		if (typeof contentFrom === "string") {
+			content = contentFrom;
+		} else if (contentFrom && typeof contentFrom === "object") {
+			contentFrom.style.display = "none";
+			content = contentFrom.innerHTML;
+		}
+
+		if (!content) {
+			content = this.wrapContent();
+		}
+
+		if (!stylesheets) {
+			stylesheets = this.removeStyles();
+		}
+
+		this.handlers = this.initializeHandlers();
+
+		this.polisher.setup();
+
+		await this.polisher.add(...stylesheets);
+
+		let startTime = performance.now();
+
+		this.chunker.viewMode = this._viewMode;
+
+		this.lazyRenderer = new LazyRenderer(this.chunker, this._lazyRenderOptions);
+
+		this.lazyRenderer.on("chunkingComplete", (data) => {
+			this.emit("chunkingComplete", data);
+		});
+
+		this.lazyRenderer.on("pageRendered", (data) => {
+			this.emit("lazyPageRendered", data);
+		});
+
+		this.lazyRenderer.on("pageUnloaded", (data) => {
+			this.emit("lazyPageUnloaded", data);
+		});
+
+		this.lazyRenderer.on("progress", (data) => {
+			this.emit("lazyProgress", data);
+		});
+
+		const result = await this.lazyRenderer.chunkInBackground(content, renderTo);
+
+		let endTime = performance.now();
+
+		result.performance = (endTime - startTime);
+		result.size = this.size;
+		result.viewMode = this._viewMode;
+		result.lazyRenderer = this.lazyRenderer;
+		result.isLazy = true;
+
+		this.rendered = true;
+
+		this.emit("rendered", result);
+
+		return result;
+	}
+
 	async exportPDF(options = {}) {
+		if (this.lazyRenderer && this.lazyRenderer.chunkingComplete) {
+			this.lazyRenderer.renderAllPages();
+			await new Promise(resolve => setTimeout(resolve, 500));
+		}
 		return this.pdfExporter.export(options);
+	}
+
+	getLazyRenderInfo() {
+		if (!this.lazyRenderer) {
+			return null;
+		}
+		return {
+			totalPages: this.lazyRenderer.totalPages,
+			renderedPages: this.lazyRenderer.getRenderedCount(),
+			progress: this.lazyRenderer.getRenderProgress(),
+			chunkingComplete: this.lazyRenderer.chunkingComplete
+		};
+	}
+
+	getWorkerStats() {
+		return this.chunker.getWorkerStats();
+	}
+
+	scrollToPage(index) {
+		if (this.lazyRenderer) {
+			this.lazyRenderer.scrollToPage(index);
+		}
+	}
+
+	scrollToPageNumber(pageNumber) {
+		if (this.lazyRenderer) {
+			this.lazyRenderer.scrollToPageNumber(pageNumber);
+		}
+	}
+
+	destroy() {
+		if (this.lazyRenderer) {
+			this.lazyRenderer.destroy();
+			this.lazyRenderer = null;
+		}
+		if (this.chunker) {
+			this.chunker.destroy();
+		}
 	}
 }
 

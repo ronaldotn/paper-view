@@ -1,6 +1,8 @@
 import Chunker from "./chunker/chunker";
 import Polisher from "./polisher/polisher";
 import Previewer from "./polyfill/previewer";
+import LazyRenderer from "./polyfill/lazy-renderer.js";
+import LayoutWorkerManager from "./chunker/layout-worker-manager.js";
 import Handler from "./modules/handler";
 import { registerHandlers, initializeHandlers } from "./utils/handlers";
 import PDFExporter from "./export/index.js";
@@ -57,6 +59,8 @@ export {
 	Chunker,
 	Polisher,
 	Previewer,
+	LazyRenderer,
+	LayoutWorkerManager,
 	Handler,
 	PDFExporter,
 	BrowserPDFExporter,

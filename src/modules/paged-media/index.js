@@ -4,6 +4,7 @@ import PrintMedia from "./print-media";
 import Splits from "./splits";
 import Counters from "./counters";
 import Lists from "./lists";
+import ImageOverflowHandler from "./image-overflow";
 import PageNumberingHandler from "../page-numbering/handler.js";
 
 export default [
@@ -13,5 +14,6 @@ export default [
 	Splits,
 	Counters,
 	Lists,
+	ImageOverflowHandler,
 	PageNumberingHandler
 ];
