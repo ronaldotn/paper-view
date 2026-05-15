@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>PDF Export Example - PaperView</title>
+        <link rel="stylesheet" type="text/css" href="assets/styles/paper.css" />
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+                line-height: 1.6;
+            }
+
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+
+            .controls {
+                margin: 20px 0;
+                padding: 15px;
+                background: #f5f5f5;
+                border-radius: 5px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                align-items: center;
+            }
+
+            button {
+                padding: 10px 20px;
+                background: #007acc;
+                color: white;
+                border: none;
+                border-radius: 3px;
+                cursor: pointer;
+                font-size: 14px;
+            }
+
+            button:hover {
+                background: #005a9e;
+            }
+
+            button:disabled {
+                background: #999;
+                cursor: not-allowed;
+            }
+
+            button.export-btn {
+                background: #28a745;
+            }
+
+            button.export-btn:hover {
+                background: #218838;
+            }
+
+            select {
+                padding: 8px 12px;
+                border-radius: 3px;
+                border: 1px solid #ccc;
+                font-size: 14px;
+            }
+
+            label {
+                font-weight: bold;
+                margin-right: 5px;
+            }
+
+            .status {
+                margin: 10px 0;
+                padding: 10px;
+                border-radius: 3px;
+                font-size: 14px;
+            }
+
+            .status.info {
+                background: #d1ecf1;
+                color: #0c5460;
+            }
+
+            .status.success {
+                background: #d4edda;
+                color: #155724;
+            }
+
+            .status.error {
+                background: #f8d7da;
+                color: #721c24;
+            }
+
+            .progress-bar {
+                width: 100%;
+                height: 20px;
+                background: #e9ecef;
+                border-radius: 10px;
+                overflow: hidden;
+                margin: 10px 0;
+                display: none;
+            }
+
+            .progress-bar.active {
+                display: block;
+            }
+
+            .progress-fill {
+                height: 100%;
+                background: #28a745;
+                width: 0%;
+                transition: width 0.3s ease;
+            }
+
+            #source-content {
+                display: none;
+            }
+
+            .documentation {
+                margin-top: 30px;
+                padding: 20px;
+                background: #f8f9fa;
+                border-radius: 5px;
+            }
+
+            .documentation h3 {
+                margin-top: 0;
+            }
+
+            pre {
+                background: #f5f5f5;
+                padding: 15px;
+                border-radius: 5px;
+                overflow-x: auto;
+            }
+
+            code {
+                background: #f0f0f0;
+                padding: 2px 4px;
+                border-radius: 3px;
+                font-family: monospace;
+            }
+
+            .feature-list {
+                list-style: none;
+                padding: 0;
+            }
+
+            .feature-list li {
+                padding: 8px 0;
+                border-bottom: 1px solid #eee;
+            }
+
+            .feature-list li:last-child {
+                border-bottom: none;
+            }
+
+            .feature-list li::before {
+                content: "✓";
+                color: #28a745;
+                font-weight: bold;
+                margin-right: 10px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container" id="source-content">
+            <header>
+                <h1>PDF Export Feature Demo</h1>
+                <p class="subtitle">PaperView PDF Export Example</p>
+            </header>
+
+            <section class="chapter">
+                <h2>Chapter 1: Introduction to PDF Export</h2>
+                <p>
+                    PaperView now includes a powerful PDF export feature that
+                    allows you to generate PDF documents directly from your
+                    paginated content. This feature works in both browser and
+                    Node.js environments.
+                </p>
+                <p>
+                    The browser implementation uses the native print API to
+                    generate PDFs, while the Node.js version leverages Puppeteer
+                    for server-side PDF generation with full control over output
+                    options.
+                </p>
+            </section>
+
+            <section class="chapter">
+                <h2>Chapter 2: Features</h2>
+                <ul class="feature-list">
+                    <li>
+                        Browser-based PDF export using window.print() API
+                    </li>
+                    <li>Node.js PDF generation with Puppeteer</li>
+                    <li>Custom page sizes (A4, Letter, Legal, etc.)</li>
+                    <li>Landscape and portrait orientation</li>
+                    <li>Headers and footers support</li>
+                    <li>Progress callbacks for large documents</li>
+                    <li>Metadata support (title, author, subject)</li>
+                    <li>Print background colors and images</li>
+                </ul>
+            </section>
+
+            <section class="chapter">
+                <h2>Chapter 3: Browser Usage</h2>
+                <p>
+                    To export a PDF in the browser, simply call the
+                    <code>exportPDF()</code> method on your Previewer instance
+                    after rendering:
+                </p>
+                <pre><code>const previewer = new PaperView.Previewer();
+await previewer.preview(content, renderTo, stylesheets);
+
+// Export with options
+await previewer.exportPDF({
+    filename: 'my-document.pdf',
+    metadata: {
+        title: 'My Document',
+        author: 'John Doe'
+    },
+    onProgress: ({ stage, progress }) => {
+        console.log(`${stage}: ${progress}%`);
+    }
+});</code></pre>
+            </section>
+
+            <section class="chapter">
+                <h2>Chapter 4: Node.js Usage</h2>
+                <p>
+                    For server-side PDF generation, use the
+                    <code>NodePDFExporter</code> class:
+                </p>
+                <pre><code>const { NodePDFExporter } = require('paperview/node-pdf');
+
+// From HTML string
+const pdf = await NodePDFExporter.fromHTML(html, css, {
+    format: 'A4',
+    landscape: false,
+    margin: {
+        top: '2cm',
+        bottom: '2cm'
+    }
+});
+
+// Save to file
+await NodePDFExporter.save(pdf, 'output.pdf');</code></pre>
+            </section>
+
+            <section class="chapter">
+                <h2>Chapter 5: Advanced Options</h2>
+                <p>
+                    The PDF exporter supports a wide range of options to
+                    customize the output:
+                </p>
+                <pre><code>// Browser options
+await previewer.exportPDF({
+    filename: 'document.pdf',
+    metadata: {
+        title: 'Document Title',
+        author: 'Author Name',
+        subject: 'Document Subject'
+    },
+    onProgress: (progress) => {
+        updateProgressBar(progress);
+    }
+});
+
+// Node.js options
+const pdf = await NodePDFExporter.fromHTML(html, css, {
+    format: 'Letter',
+    landscape: true,
+    scale: 1,
+    displayHeaderFooter: true,
+    headerTemplate: '&lt;div style="text-align: center;"&gt;Header&lt;/div&gt;',
+    footerTemplate: '&lt;div&gt;Page &lt;span class="pageNumber"&gt;&lt;/span&gt;&lt;/div&gt;',
+    printBackground: true,
+    margin: {
+        top: '3cm',
+        right: '2cm',
+        bottom: '3cm',
+        left: '2cm'
+    },
+    pageRanges: '1-5',
+    preferCSSPageSize: true
+});</code></pre>
+            </section>
+
+            <section class="chapter">
+                <h2>Chapter 6: Sample Content</h2>
+                <p>
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed
+                    do eiusmod tempor incididunt ut labore et dolore magna
+                    aliqua. Ut enim ad minim veniam, quis nostrud exercitation
+                    ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                </p>
+                <p>
+                    Duis aute irure dolor in reprehenderit in voluptate velit
+                    esse cillum dolore eu fugiat nulla pariatur. Excepteur sint
+                    occaecat cupidatat non proident, sunt in culpa qui officia
+                    deserunt mollit anim id est laborum.
+                </p>
+                <p>
+                    Sed ut perspiciatis unde omnis iste natus error sit
+                    voluptatem accusantium doloremque laudantium, totam rem
+                    aperiam, eaque ipsa quae ab illo inventore veritatis et
+                    quasi architecto beatae vitae dicta sunt explicabo.
+                </p>
+                <p>
+                    Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut
+                    odit aut fugit, sed quia consequuntur magni dolores eos qui
+                    ratione voluptatem sequi nesciunt.
+                </p>
+            </section>
+
+            <section class="chapter">
+                <h2>Chapter 7: Conclusion</h2>
+                <p>
+                    The PDF export feature makes it easy to generate
+                    professional-quality PDF documents from your PaperView
+                    projects. Whether you're building a browser-based document
+                    editor or a server-side PDF generation service, PaperView has
+                    you covered.
+                </p>
+                <p>
+                    For more information, check out the documentation and API
+                    reference on our GitHub repository.
+                </p>
+            </section>
+        </div>
+
+        <div class="container">
+            <h1>PDF Export Example</h1>
+            <p>
+                This example demonstrates the PDF export feature in PaperView.
+                Render the content below and export it as a PDF.
+            </p>
+
+            <div class="controls">
+                <label for="filename">Filename:</label>
+                <input
+                    type="text"
+                    id="filename"
+                    value="document.pdf"
+                    style="padding: 8px; border-radius: 3px; border: 1px solid #ccc;"
+                />
+
+                <label for="pageSize">Page Size:</label>
+                <select id="pageSize">
+                    <option value="A4">A4</option>
+                    <option value="Letter">Letter</option>
+                    <option value="Legal">Legal</option>
+                    <option value="A3">A3</option>
+                    <option value="A5">A5</option>
+                </select>
+
+                <label for="orientation">Orientation:</label>
+                <select id="orientation">
+                    <option value="portrait">Portrait</option>
+                    <option value="landscape">Landscape</option>
+                </select>
+
+                <button id="exportBtn" class="export-btn" disabled>
+                    Export to PDF
+                </button>
+            </div>
+
+            <div id="status" class="status info" style="display: none;"></div>
+
+            <div id="progressBar" class="progress-bar">
+                <div id="progressFill" class="progress-fill"></div>
+            </div>
+
+            <div id="renderTo"></div>
+
+            <div class="documentation">
+                <h3>API Reference</h3>
+                <h4>Browser Export</h4>
+                <pre><code>// After rendering
+await previewer.exportPDF({
+    filename: 'document.pdf',
+    metadata: { title: 'My Doc' },
+    onProgress: ({ stage, progress }) => {
+        console.log(stage, progress);
+    }
+});</code></pre>
+
+                <h4>Node.js Export</h4>
+                <pre><code>import { NodePDFExporter } from 'paperview/node-pdf';
+
+const pdf = await NodePDFExporter.fromHTML(html, css, {
+    format: 'A4',
+    landscape: false,
+    margin: { top: '2cm', bottom: '2cm' }
+});
+
+await NodePDFExporter.save(pdf, 'output.pdf');</code></pre>
+            </div>
+        </div>
+
+        <script src="../dist/paperview.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const sourceContent = document.getElementById("source-content");
+                const renderToElement = document.getElementById("renderTo");
+                const exportBtn = document.getElementById("exportBtn");
+                const filenameInput = document.getElementById("filename");
+                const pageSizeSelect = document.getElementById("pageSize");
+                const orientationSelect =
+                    document.getElementById("orientation");
+                const statusDiv = document.getElementById("status");
+                const progressBar = document.getElementById("progressBar");
+                const progressFill = document.getElementById("progressFill");
+
+                let previewer = null;
+                let flow = null;
+
+                function showStatus(message, type = "info") {
+                    statusDiv.textContent = message;
+                    statusDiv.className = `status ${type}`;
+                    statusDiv.style.display = "block";
+                }
+
+                function hideStatus() {
+                    statusDiv.style.display = "none";
+                }
+
+                function showProgress() {
+                    progressBar.classList.add("active");
+                    progressFill.style.width = "0%";
+                }
+
+                function updateProgress(percent) {
+                    progressFill.style.width = `${percent}%`;
+                }
+
+                function hideProgress() {
+                    progressBar.classList.remove("active");
+                }
+
+                function initPaperView() {
+                    showStatus("Rendering document...", "info");
+
+                    previewer = new PaperView.Previewer({ viewMode: "single" });
+
+                    previewer
+                        .preview(sourceContent, renderToElement, [
+                            "assets/styles/paper.css",
+                        ])
+                        .then((result) => {
+                            flow = result;
+                            exportBtn.disabled = false;
+                            showStatus(
+                                `Document rendered successfully with ${flow.total} pages. Click "Export to PDF" to generate PDF.`,
+                                "success",
+                            );
+                        })
+                        .catch((error) => {
+                            showStatus(
+                                `Error rendering document: ${error.message}`,
+                                "error",
+                            );
+                            console.error(error);
+                        });
+                }
+
+                exportBtn.addEventListener("click", async () => {
+                    if (!flow) {
+                        showStatus(
+                            "Document not rendered yet. Please wait.",
+                            "error",
+                        );
+                        return;
+                    }
+
+                    exportBtn.disabled = true;
+                    showProgress();
+                    showStatus("Preparing PDF export...", "info");
+
+                    try {
+                        const filename =
+                            filenameInput.value || "document.pdf";
+
+                        await previewer.exportPDF({
+                            filename: filename,
+                            metadata: {
+                                title: "PaperView PDF Export Demo",
+                                author: "PaperView",
+                                subject: "PDF Export Example",
+                            },
+                            onProgress: ({ stage, progress }) => {
+                                updateProgress(progress);
+                                showStatus(
+                                    `Exporting PDF: ${stage} (${progress}%)`,
+                                    "info",
+                                );
+                            },
+                        });
+
+                        showStatus(
+                            `PDF export initiated. Save the file as "${filename}" in the print dialog.`,
+                            "success",
+                        );
+                    } catch (error) {
+                        showStatus(
+                            `PDF export failed: ${error.message}`,
+                            "error",
+                        );
+                        console.error(error);
+                    } finally {
+                        hideProgress();
+                        exportBtn.disabled = false;
+                    }
+                });
+
+                initPaperView();
+            });
+        </script>
+    </body>
+</html>

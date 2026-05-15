@@ -3,6 +3,8 @@ import Polisher from "./polisher/polisher";
 import Previewer from "./polyfill/previewer";
 import Handler from "./modules/handler";
 import { registerHandlers, initializeHandlers } from "./utils/handlers";
+import PDFExporter from "./export/index.js";
+import BrowserPDFExporter from "./export/browser-pdf-exporter.js";
 
 // Page Numbering Module
 import PageNumberingModule from "./modules/page-numbering/index.js";
@@ -56,6 +58,8 @@ export {
 	Polisher,
 	Previewer,
 	Handler,
+	PDFExporter,
+	BrowserPDFExporter,
 	registerHandlers,
 	initializeHandlers,
 	// Page Numbering Module

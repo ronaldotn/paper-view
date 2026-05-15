@@ -2,6 +2,7 @@ import EventEmitter from "event-emitter";
 
 import Chunker from "../chunker/chunker";
 import Polisher from "../polisher/polisher";
+import PDFExporter from "../export/index.js";
 
 import { registerHandlers, initializeHandlers } from "../utils/handlers";
 
@@ -28,6 +29,12 @@ class Previewer {
 
 		// Hooks
 		this.hooks = {};
+
+		// PDF Exporter
+		this.pdfExporter = new PDFExporter(this);
+
+		// Rendered state
+		this.rendered = false;
 
 		// default size
 		this.size = {
@@ -175,9 +182,15 @@ class Previewer {
 		flow.size = this.size;
 		flow.viewMode = this._viewMode;
 
+		this.rendered = true;
+
 		this.emit("rendered", flow);
 
 		return flow;
+	}
+
+	async exportPDF(options = {}) {
+		return this.pdfExporter.export(options);
 	}
 }
 

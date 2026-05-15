@@ -72,5 +72,16 @@ export default [
             format: 'umd'
         },
         plugins: plugins
+    },
+    // Node.js PDF Exporter (CommonJS)
+    {
+        input: "./src/export/node-pdf-exporter.js",
+        output: {
+            name: 'PaperViewNodePDFExporter',
+            file: "./dist/paperview.node-pdf.js",
+            format: 'cjs'
+        },
+        plugins: plugins,
+        external: ['puppeteer', 'fs', 'path']
     }
 ];
