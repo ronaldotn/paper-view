@@ -603,6 +603,11 @@ class Chunker {
 			this.pageNumbering.updateConfig(config);
 		}
 		
+		// Clear existing page number elements before re-rendering
+		if (this.pageNumbering) {
+			this.pageNumbering._clearPageElements();
+		}
+		
 		// If page numbering is now enabled and we have existing pages, render page numbers
 		if (this.pageNumbering.isEnabled() && this.pages.length > 0) {
 			this.pages.forEach((page, index) => {
@@ -638,6 +643,11 @@ class Chunker {
 			this.pageNumbering.disable();
 		}
 		
+		// Clear existing page number elements before re-rendering
+		if (this.pageNumbering) {
+			this.pageNumbering._clearPageElements();
+		}
+		
 		// If enabling and we have existing pages, render page numbers
 		if (enabled && this.pageNumbering.isEnabled() && this.pages.length > 0) {
 			this.pages.forEach((page, index) => {
@@ -658,6 +668,11 @@ class Chunker {
 			this.pageNumbering = new PageNumberingModule({});
 		}
 		this.pageNumbering.applyCSSRules(pageRules);
+		
+		// Clear existing page number elements before re-rendering
+		if (this.pageNumbering) {
+			this.pageNumbering._clearPageElements();
+		}
 		
 		// If page numbering is now enabled and we have existing pages, render page numbers
 		if (this.pageNumbering.isEnabled() && this.pages.length > 0) {

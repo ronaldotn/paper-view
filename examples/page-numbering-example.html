@@ -1,192 +1,305 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Page Numbering Example - PaperView</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            line-height: 1.6;
-        }
-        
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        
-        .controls {
-            margin: 20px 0;
-            padding: 15px;
-            background: #f5f5f5;
-            border-radius: 5px;
-        }
-        
-        button {
-            padding: 8px 16px;
-            margin-right: 10px;
-            background: #007acc;
-            color: white;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-        }
-        
-        button:hover {
-            background: #005a9e;
-        }
-        
-        .content {
-            border: 1px solid #ddd;
-            padding: 20px;
-            margin: 20px 0;
-            min-height: 200px;
-        }
-        
-        code {
-            background: #f0f0f0;
-            padding: 2px 4px;
-            border-radius: 3px;
-            font-family: monospace;
-        }
-        
-        pre {
-            background: #f5f5f5;
-            padding: 15px;
-            border-radius: 5px;
-            overflow-x: auto;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Page Numbering Example</h1>
-        
-        <p>This example demonstrates the page numbering feature in PaperView.</p>
-        
-        <div class="controls">
-            <h3>Page Numbering Controls</h3>
-            <button id="enableBtn">Enable Page Numbering</button>
-            <button id="disableBtn">Disable Page Numbering</button>
-            <button id="changePositionBtn">Change Position to Top-Right</button>
-            <button id="changeStyleBtn">Change Style to Roman Numerals</button>
-        </div>
-        
-        <div class="content" id="content">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Page Numbering Example - PaperView</title>
+        <link rel="stylesheet" type="text/css" href="assets/styles/paper.css" />
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+                line-height: 1.6;
+            }
+
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+
+            .controls {
+                margin: 20px 0;
+                padding: 15px;
+                background: #f5f5f5;
+                border-radius: 5px;
+            }
+
+            button {
+                padding: 8px 16px;
+                margin-right: 10px;
+                margin-bottom: 5px;
+                background: #007acc;
+                color: white;
+                border: none;
+                border-radius: 3px;
+                cursor: pointer;
+            }
+
+            button:hover {
+                background: #005a9e;
+            }
+
+            code {
+                background: #f0f0f0;
+                padding: 2px 4px;
+                border-radius: 3px;
+                font-family: monospace;
+            }
+
+            pre {
+                background: #f5f5f5;
+                padding: 15px;
+                border-radius: 5px;
+                overflow-x: auto;
+            }
+
+            #source-content {
+                display: none;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container" id="source-content">
+            <h1>Page Numbering Example</h1>
+
+            <p>
+                This example demonstrates the page numbering feature in
+                PaperView.
+            </p>
+
             <h2>Sample Content</h2>
-            <p>This is sample content that will be paginated by PaperView. The page numbering feature allows you to display page numbers in various positions and styles.</p>
-            
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-            
-            <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-            
+            <p>
+                This is sample content that will be paginated by PaperView. The
+                page numbering feature allows you to display page numbers in
+                various positions and styles.
+            </p>
+
+            <p>
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
+                eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
+                enim ad minim veniam, quis nostrud exercitation ullamco laboris
+                nisi ut aliquip ex ea commodo consequat.
+            </p>
+
+            <p>
+                Duis aute irure dolor in reprehenderit in voluptate velit esse
+                cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat
+                cupidatat non proident, sunt in culpa qui officia deserunt
+                mollit anim id est laborum.
+            </p>
+
             <h3>More Content</h3>
-            <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
-            
-            <p>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit.</p>
-            
-            <p>Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur.</p>
+            <p>
+                Sed ut perspiciatis unde omnis iste natus error sit voluptatem
+                accusantium doloremque laudantium, totam rem aperiam, eaque ipsa
+                quae ab illo inventore veritatis et quasi architecto beatae
+                vitae dicta sunt explicabo.
+            </p>
+
+            <p>
+                Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit
+                aut fugit, sed quia consequuntur magni dolores eos qui ratione
+                voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem
+                ipsum quia dolor sit amet, consectetur, adipisci velit.
+            </p>
+
+            <p>
+                Ut enim ad minima veniam, quis nostrum exercitationem ullam
+                corporis suscipit laboriosam, nisi ut aliquid ex ea commodi
+                consequatur? Quis autem vel eum iure reprehenderit qui in ea
+                voluptate velit esse quam nihil molestiae consequatur.
+            </p>
+
+            <p>
+                At vero eos et accusamus et iusto odio dignissimos ducimus qui
+                blanditiis praesentium voluptatum deleniti atque corrupti quos
+                dolores et quas molestias excepturi sint occaecati cupiditate
+                non provident, similique sunt in culpa qui officia deserunt
+                mollitia animi, id est laborum et dolorum fuga.
+            </p>
+
+            <p>
+                Et harum quidem rerum facilis est et expedita distinctio. Nam
+                libero tempore, cum soluta nobis est eligendi optio cumque nihil
+                impedit quo minus id quod maxime placeat facere possimus, omnis
+                voluptas assumenda est, omnis dolor repellendus.
+            </p>
+
+            <p>
+                Temporibus autem quibusdam et aut officiis debitis aut rerum
+                necessitatibus saepe eveniet ut et voluptates repudiandae sint
+                et molestiae non recusandae. Itaque earum rerum hic tenetur a
+                sapiente delectus, ut aut reiciendis voluptatibus maiores alias
+                consequatur aut perferendis doloribus asperiores repellat.
+            </p>
+
+            <h3>Even More Content</h3>
+            <p>
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
+                eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
+                enim ad minim veniam, quis nostrud exercitation ullamco laboris
+                nisi ut aliquip ex ea commodo consequat.
+            </p>
+
+            <p>
+                Duis aute irure dolor in reprehenderit in voluptate velit esse
+                cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat
+                cupidatat non proident, sunt in culpa qui officia deserunt
+                mollit anim id est laborum.
+            </p>
+
+            <p>
+                Sed ut perspiciatis unde omnis iste natus error sit voluptatem
+                accusantium doloremque laudantium, totam rem aperiam, eaque ipsa
+                quae ab illo inventore veritatis et quasi architecto beatae
+                vitae dicta sunt explicabo.
+            </p>
+
+            <p>
+                Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit
+                aut fugit, sed quia consequuntur magni dolores eos qui ratione
+                voluptatem sequi nesciunt.
+            </p>
         </div>
-        
-        <div id="renderTo"></div>
-        
-        <div class="documentation">
-            <h3>Usage Example</h3>
-            <pre><code>// Create a Chunker with page numbering configuration
-const chunker = new Chunker(contentElement, renderToElement, {
-    pageNumbering: {
-        enabled: true,
-        position: 'bottom-center', // top-left, top-center, top-right, bottom-left, bottom-center, bottom-right
-        style: 'decimal', // decimal, upper-roman, lower-roman, upper-alpha, lower-alpha
-        start: 1, // Starting page number
-        template: 'Page {current} of {total}' // Optional template with {current} and {total} placeholders
-    }
-});
 
-// Update configuration dynamically
-chunker.updatePageNumbering({
-    position: 'top-right',
-    style: 'upper-roman'
-});
+        <div class="container">
+            <h1>Page Numbering Example</h1>
 
-// Enable/disable page numbering
-chunker.setPageNumberingEnabled(true);
-chunker.setPageNumberingEnabled(false);
+            <p>
+                This example demonstrates the page numbering feature in
+                PaperView.
+            </p>
 
-// Get current configuration
-const config = chunker.getPageNumberingConfig();</code></pre>
+            <div class="controls">
+                <h3>Page Numbering Controls</h3>
+                <button id="enableBtn">Enable Page Numbering</button>
+                <button id="disableBtn">Disable Page Numbering</button>
+                <button id="changePositionBtn">
+                    Change Position to Top-Right
+                </button>
+                <button id="changeStyleBtn">
+                    Change Style to Roman Numerals
+                </button>
+                <button id="changeTemplateBtn">Change Template</button>
+            </div>
+
+            <div id="renderTo"></div>
+
+            <div class="documentation">
+                <h3>Usage Example</h3>
+                <pre><code>// Create a Previewer with page numbering configuration
+const previewer = new PaperView.Previewer({ viewMode: "single" });
+
+previewer.preview(sourceContent, renderToElement, ['assets/styles/paper.css']).then((flow) => {
+    // Enable page numbering after rendering
+    flow.setPageNumberingEnabled(true);
+
+    // Update configuration dynamically
+    flow.updatePageNumbering({
+        position: 'top-right',
+        style: 'upper-roman'
+    });
+});</code></pre>
+            </div>
         </div>
-    </div>
-    
-    <script type="module">
-        import { Chunker } from './../dist/paperview.esm.js';
-        
-        // Get DOM elements
-        const contentElement = document.getElementById('content');
-        const renderToElement = document.getElementById('renderTo');
-        const enableBtn = document.getElementById('enableBtn');
-        const disableBtn = document.getElementById('disableBtn');
-        const changePositionBtn = document.getElementById('changePositionBtn');
-        const changeStyleBtn = document.getElementById('changeStyleBtn');
-        
-        let chunker = null;
-        
-        // Initialize PaperView
-        function initPaperView() {
-            if (chunker) {
-                chunker.destroy();
-            }
-            
-            // Create Chunker with initial configuration (page numbering disabled by default)
-            chunker = new Chunker(contentElement, renderToElement, {
-                pageNumbering: {
-                    enabled: false, // Disabled by default
-                    position: 'bottom-center',
-                    style: 'decimal',
-                    start: 1,
-                    template: '{current}'
+
+        <script src="../dist/paperview.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const sourceContent = document.getElementById("source-content");
+                const renderToElement = document.getElementById("renderTo");
+                const enableBtn = document.getElementById("enableBtn");
+                const disableBtn = document.getElementById("disableBtn");
+                const changePositionBtn =
+                    document.getElementById("changePositionBtn");
+                const changeStyleBtn =
+                    document.getElementById("changeStyleBtn");
+                const changeTemplateBtn =
+                    document.getElementById("changeTemplateBtn");
+
+                let previewer = null;
+                let flow = null;
+
+                // Initialize PaperView
+                function initPaperView() {
+                    previewer = new PaperView.Previewer({ viewMode: "single" });
+
+                    previewer
+                        .preview(sourceContent, renderToElement, [
+                            "assets/styles/paper.css",
+                        ])
+                        .then((result) => {
+                            flow = result;
+                            console.log(
+                                "Rendering " +
+                                    flow.total +
+                                    " pages took " +
+                                    flow.performance +
+                                    " milliseconds.",
+                            );
+
+                            // Enable page numbering by default
+                            flow.setPageNumberingEnabled(true);
+                            console.log("Page numbering enabled");
+                        });
                 }
+
+                // Event listeners
+                enableBtn.addEventListener("click", () => {
+                    if (flow) {
+                        flow.setPageNumberingEnabled(true);
+                        console.log("Page numbering enabled");
+                    }
+                });
+
+                disableBtn.addEventListener("click", () => {
+                    if (flow) {
+                        flow.setPageNumberingEnabled(false);
+                        console.log("Page numbering disabled");
+                    }
+                });
+
+                changePositionBtn.addEventListener("click", () => {
+                    if (flow) {
+                        flow.updatePageNumbering({
+                            position: "top-right",
+                            enabled: true,
+                        });
+                        console.log(
+                            "Page numbering position changed to top-right",
+                        );
+                    }
+                });
+
+                changeStyleBtn.addEventListener("click", () => {
+                    if (flow) {
+                        flow.updatePageNumbering({
+                            style: "upper-roman",
+                            enabled: true,
+                        });
+                        console.log(
+                            "Page numbering style changed to Roman numerals",
+                        );
+                    }
+                });
+
+                let templateToggle = false;
+                changeTemplateBtn.addEventListener("click", () => {
+                    if (flow) {
+                        templateToggle = !templateToggle;
+                        flow.updatePageNumbering({
+                            template: templateToggle
+                                ? "Page {current} of {total}"
+                                : "{current}",
+                            enabled: true,
+                        });
+                        console.log("Page numbering template changed");
+                    }
+                });
+
+                // Initialize on page load
+                initPaperView();
             });
-        }
-        
-        // Event listeners
-        enableBtn.addEventListener('click', () => {
-            if (chunker) {
-                chunker.setPageNumberingEnabled(true);
-                console.log('Page numbering enabled');
-            }
-        });
-        
-        disableBtn.addEventListener('click', () => {
-            if (chunker) {
-                chunker.setPageNumberingEnabled(false);
-                console.log('Page numbering disabled');
-            }
-        });
-        
-        changePositionBtn.addEventListener('click', () => {
-            if (chunker) {
-                chunker.updatePageNumbering({
-                    position: 'top-right',
-                    enabled: true
-                });
-                console.log('Page numbering position changed to top-right');
-            }
-        });
-        
-        changeStyleBtn.addEventListener('click', () => {
-            if (chunker) {
-                chunker.updatePageNumbering({
-                    style: 'upper-roman',
-                    enabled: true
-                });
-                console.log('Page numbering style changed to Roman numerals');
-            }
-        });
-        
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', initPaperView);
-    </script>
-</body>
+        </script>
+    </body>
 </html>

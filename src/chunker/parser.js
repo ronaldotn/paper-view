@@ -32,18 +32,18 @@ class ContentParser {
 	}
 
 	add(contents) {
-		// let fragment = document.createDocumentFragment();
-		//
-		// let children = [...contents.childNodes];
-		// for (let child of children) {
-		// 	let clone = child.cloneNode(true);
-		// 	fragment.appendChild(clone);
-		// }
+		let fragment = document.createDocumentFragment();
 
-		this.addRefs(contents);
-		this.removeEmpty(contents);
+		let children = [...contents.childNodes];
+		for (let child of children) {
+			let clone = child.cloneNode(true);
+			fragment.appendChild(clone);
+		}
 
-		return contents;
+		this.addRefs(fragment);
+		this.removeEmpty(fragment);
+
+		return fragment;
 	}
 
 	addRefs(content) {
