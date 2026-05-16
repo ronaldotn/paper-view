@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PaperView — Biblioteca de Maquetación CSS Paged Media</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f3f4f6;
+      --surface: #ffffff;
+      --surface-2: #f9fafb;
+      --border: #e5e7eb;
+      --border-strong: #d1d5db;
+      --text: #111827;
+      --text-dim: #6b7280;
+      --text-muted: #9ca3af;
+      --accent: #e11d48;
+      --accent-hover: #be123c;
+      --accent-bg: rgba(225,29,72,.06);
+      --green: #059669;
+      --green-bg: rgba(5,150,105,.08);
+      --blue: #2563eb;
+      --blue-bg: rgba(37,99,235,.08);
+      --purple: #7c3aed;
+      --purple-bg: rgba(124,58,237,.08);
+      --amber: #d97706;
+      --amber-bg: rgba(217,119,6,.08);
+      --radius: 8px;
+      --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --mono: 'SF Mono', 'Consolas', monospace;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.05);
+      --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+      --shadow-md: 0 4px 6px rgba(0,0,0,.07), 0 2px 4px rgba(0,0,0,.06);
+      --shadow-lg: 0 10px 15px rgba(0,0,0,.1), 0 4px 6px rgba(0,0,0,.05);
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ============================================================
+       LAYOUT
+       ============================================================ */
+    .app {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      grid-template-rows: 48px 1fr;
+      height: 100vh;
+    }
+
+    /* ============================================================
+       HEADER
+       ============================================================ */
+    .header {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      z-index: 10;
+    }
+    .header .logo {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: -.3px;
+    }
+    .header .logo span {
+      font-weight: 400;
+      color: var(--text-dim);
+      font-size: 12px;
+      margin-left: 6px;
+    }
+    .header .badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 99px;
+      font-size: 9px;
+      font-weight: 700;
+      background: var(--accent-bg);
+      color: var(--accent);
+      border: 1px solid rgba(225,29,72,.15);
+    }
+    .header .actions { margin-left: auto; display: flex; gap: 6px; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      border: 1px solid var(--border-strong);
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .15s;
+      font-family: var(--font);
+      box-shadow: var(--shadow-sm);
+    }
+    .btn:hover { border-color: var(--accent); background: var(--surface-2); }
+    .btn:disabled { opacity: .35; cursor: not-allowed; }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .btn.primary:hover { background: var(--accent-hover); }
+    .btn.success { background: var(--green); border-color: var(--green); color: #fff; }
+    .btn.success:hover { background: #047857; }
+    .btn.icon { padding: 4px 8px; font-size: 14px; }
+
+    /* ============================================================
+       SIDEBAR
+       ============================================================ */
+    .sidebar {
+      overflow-y: auto;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-track { background: transparent; }
+    .sidebar::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 2px; }
+
+    .section-title {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--text-muted);
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .feature-list { display: flex; flex-direction: column; gap: 3px; }
+
+    .feature-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 8px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background .12s;
+      user-select: none;
+    }
+    .feature-toggle:hover { background: var(--surface-2); }
+    .feature-toggle.active { background: var(--accent-bg); }
+
+    .feature-toggle input[type="checkbox"] {
+      appearance: none;
+      width: 15px;
+      height: 15px;
+      border: 2px solid var(--border-strong);
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all .12s;
+      flex-shrink: 0;
+      position: relative;
+    }
+    .feature-toggle input[type="checkbox"]:checked {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    .feature-toggle input[type="checkbox"]:checked::after {
+      content: '✓';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 9px;
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .feature-toggle .info { flex: 1; min-width: 0; }
+    .feature-toggle .info .name { font-size: 12px; font-weight: 500; color: var(--text); }
+    .feature-toggle .info .desc { font-size: 10px; color: var(--text-dim); margin-top: 1px; }
+
+    .feature-toggle .tag {
+      font-size: 8px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 3px;
+      flex-shrink: 0;
+      text-transform: uppercase;
+      letter-spacing: .3px;
+    }
+    .tag-core { background: var(--blue-bg); color: var(--blue); }
+    .tag-new { background: var(--green-bg); color: var(--green); }
+    .tag-adv { background: var(--purple-bg); color: var(--purple); }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .setting-row label { font-size: 11px; color: var(--text-dim); flex-shrink: 0; min-width: 40px; }
+    .setting-row select {
+      flex: 1;
+      padding: 3px 6px;
+      border: 1px solid var(--border-strong);
+      border-radius: 4px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 11px;
+      font-family: var(--font);
+      cursor: pointer;
+    }
+    .setting-row select:focus { outline: none; border-color: var(--accent); }
+
+    .module-info {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 8px 10px;
+      font-size: 10px;
+      line-height: 1.6;
+      color: var(--text-dim);
+    }
+    .module-info code {
+      background: var(--surface);
+      padding: 1px 4px;
+      border-radius: 2px;
+      font-family: var(--mono);
+      font-size: 9px;
+      color: var(--blue);
+      border: 1px solid var(--border);
+    }
+
+    /* ============================================================
+       VIEWER
+       ============================================================ */
+    .viewer-wrap {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    /* Toolbar del visor */
+    .viewer-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      z-index: 5;
+      flex-shrink: 0;
+    }
+
+    .viewer-toolbar .left,
+    .viewer-toolbar .right {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .viewer-toolbar .page-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .viewer-toolbar .page-nav .page-display {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      min-width: 80px;
+      text-align: center;
+    }
+
+    .viewer-toolbar .page-nav .page-display .current {
+      color: var(--accent);
+    }
+
+    .viewer-toolbar .zoom-display {
+      font-size: 11px;
+      color: var(--text-dim);
+      min-width: 42px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .viewer-toolbar .btn {
+      padding: 4px 8px;
+      font-size: 13px;
+      background: var(--surface);
+      border-color: var(--border);
+    }
+    .viewer-toolbar .btn:hover {
+      background: var(--surface-2);
+      border-color: var(--border-strong);
+    }
+    .viewer-toolbar .btn:disabled { opacity: .3; }
+
+    /* Área de scroll */
+    .viewer-scroll {
+      flex: 1;
+      overflow: auto;
+      scroll-behavior: smooth;
+      display: flex;
+      justify-content: center;
+      background:
+        radial-gradient(ellipse at 50% 0%, rgba(37,99,235,.03) 0%, transparent 60%),
+        var(--bg);
+    }
+
+    .viewer-scroll::-webkit-scrollbar { width: 8px; }
+    .viewer-scroll::-webkit-scrollbar-track { background: transparent; }
+    .viewer-scroll::-webkit-scrollbar-thumb {
+      background: var(--border-strong);
+      border-radius: 4px;
+    }
+    .viewer-scroll::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+    #renderTo { min-height: 100%; width: 100%; }
+
+    /* Páginas */
+    #renderTo .pagedjs_pages {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+    }
+
+    #renderTo .pagedjs_page {
+      background: #fff;
+      box-shadow:
+        0 1px 3px rgba(0,0,0,.08),
+        0 4px 12px rgba(0,0,0,.06),
+        0 12px 32px rgba(0,0,0,.04);
+      border-radius: 2px;
+      overflow: hidden;
+      transition: transform .2s ease, box-shadow .2s ease;
+      transform-origin: center top;
+      border: 1px solid rgba(0,0,0,.06);
+    }
+
+    /* Números de página */
+    #renderTo .pagedjs-page-number {
+      color: #333 !important;
+      font-size: 11px !important;
+      font-weight: 500 !important;
+      background: transparent !important;
+      z-index: 10 !important;
+      pointer-events: none !important;
+    }
+
+    /* Empty state */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: var(--text-dim);
+      text-align: center;
+      gap: 10px;
+    }
+    .empty-state .icon { font-size: 40px; opacity: .2; }
+    .empty-state h3 { font-size: 15px; font-weight: 600; color: var(--text); }
+    .empty-state p { font-size: 12px; max-width: 280px; line-height: 1.5; }
+
+    /* ============================================================
+       STATUS BAR
+       ============================================================ */
+    .statusbar {
+      position: fixed;
+      bottom: 0;
+      right: 0;
+      left: 280px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 4px 16px;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      font-size: 10px;
+      color: var(--text-dim);
+      z-index: 10;
+    }
+    .stat { display: flex; align-items: center; gap: 3px; }
+    .stat .val { color: var(--accent); font-weight: 600; font-variant-numeric: tabular-nums; }
+    .stat .label { text-transform: uppercase; font-size: 8px; letter-spacing: .5px; }
+    .stat.spacer { flex: 1; }
+
+    .pill {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 99px;
+      font-size: 9px;
+      font-weight: 600;
+    }
+    .pill.ready { background: var(--blue-bg); color: var(--blue); }
+    .pill.busy { background: var(--amber-bg); color: var(--amber); }
+    .pill.done { background: var(--green-bg); color: var(--green); }
+    .pill.off { background: rgba(220,38,38,.08); color: #dc2626; }
+
+    /* ============================================================
+       RESPONSIVE
+       ============================================================ */
+    @media (max-width: 900px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .statusbar { left: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ===== HEADER ===== -->
+  <div class="header">
+    <div class="logo">PaperView<span>Biblioteca CSS Paged Media</span></div>
+    <div class="badge">v0.3.0</div>
+    <div class="actions">
+      <button class="btn primary" id="btnRender">▶ Renderizar</button>
+      <button class="btn success" id="btnExport" disabled>↓ PDF</button>
+    </div>
+  </div>
+
+  <!-- ===== SIDEBAR ===== -->
+  <div class="sidebar">
+    <div>
+      <div class="section-title">Funcionalidades</div>
+      <div class="feature-list" id="featureList"></div>
+    </div>
+    <div>
+      <div class="section-title">Configuración</div>
+      <div style="display:flex;flex-direction:column;gap:2px;margin-top:6px">
+        <div class="setting-row">
+          <label>Modo</label>
+          <select id="viewMode">
+            <option value="single">Página simple</option>
+            <option value="spread">Doble página</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label>Estilo #</label>
+          <select id="numStyle">
+            <option value="decimal">1, 2, 3…</option>
+            <option value="upper-roman">I, II, III…</option>
+            <option value="lower-roman">i, ii, iii…</option>
+            <option value="upper-alpha">A, B, C…</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label>Posición #</label>
+          <select id="numPos">
+            <option value="bottom-center">Abajo centro</option>
+            <option value="bottom-right">Abajo derecha</option>
+            <option value="bottom-left">Abajo izquierda</option>
+            <option value="top-center">Arriba centro</option>
+            <option value="top-right">Arriba derecha</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="section-title">Módulo</div>
+      <div class="module-info" id="moduleInfo">Haz clic en una funcionalidad para ver detalles.</div>
+    </div>
+  </div>
+
+  <!-- ===== VIEWER ===== -->
+  <div class="viewer-wrap">
+    <div class="viewer-toolbar">
+      <div class="left">
+        <div class="page-nav">
+          <button class="btn icon" id="btnPrev" title="Página anterior" disabled>‹</button>
+          <div class="page-display">
+            <span class="current" id="currentPage">0</span> / <span id="totalPages">0</span>
+          </div>
+          <button class="btn icon" id="btnNext" title="Página siguiente" disabled>›</button>
+        </div>
+      </div>
+      <div class="right">
+        <button class="btn icon" id="btnZoomOut" title="Alejar">−</button>
+        <div class="zoom-display" id="zoomDisplay">100%</div>
+        <button class="btn icon" id="btnZoomIn" title="Acercar">+</button>
+        <button class="btn icon" id="btnZoomFit" title="Ajustar" style="font-size:11px">⊡</button>
+      </div>
+    </div>
+
+    <div class="viewer-scroll" id="viewerScroll">
+      <div id="renderTo">
+        <div class="empty-state">
+          <div class="icon">📄</div>
+          <h3>PaperView Demo</h3>
+          <p>Selecciona funcionalidades y presiona <strong>Renderizar</strong>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== STATUS BAR ===== -->
+<div class="statusbar">
+  <div class="stat"><span class="label">Páginas</span> <span class="val" id="sPages">0</span></div>
+  <div class="stat"><span class="label">Tiempo</span> <span class="val" id="sTime">—</span></div>
+  <div class="stat spacer"></div>
+  <div class="stat"><span class="pill ready" id="sStatus">Listo</span></div>
+</div>
+
+<!-- ============================================================
+     FUENTE DE CONTENIDO
+     ============================================================ -->
+<style>
+  @page {
+    size: A4;
+    margin: 2.5cm 2cm;
+    @top-center { content: "PaperView — Demo"; font-size: 9pt; color: #666; font-style: italic; }
+  }
+  @page cover { @top-center { content: none; } @bottom-center { content: none; } }
+
+  body { font-family: "Georgia", "Times New Roman", serif; line-height: 1.7; color: #1a1a1a; max-width: 100%; }
+  h1 { font-size: 24pt; margin-bottom: 12pt; color: #111; border-bottom: 2px solid #333; padding-bottom: 8pt; }
+  h2 { font-size: 18pt; margin-top: 24pt; margin-bottom: 12pt; color: #2c3e50; }
+  p  { margin-bottom: 12pt; text-align: justify; }
+  ul, ol { margin-bottom: 12pt; padding-left: 24pt; }
+  li { margin-bottom: 4pt; }
+  code { font-family: "Consolas", "Courier New", monospace; font-size: 10pt; background: #f0f0f0; padding: 1pt 4pt; border-radius: 2pt; }
+
+  figure.float-top { float: top; margin: 0 0 12pt 0; padding: 12pt; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4pt; }
+  figure.float-top figcaption { font-size: 9pt; color: #666; font-style: italic; margin-top: 8pt; }
+
+  table.float-bottom { float: bottom; width: 100%; border-collapse: collapse; margin: 12pt 0 0 0; font-size: 9pt; }
+  table.float-bottom th { background: #2c3e50; color: #fff; padding: 6pt 8pt; text-align: left; }
+  table.float-bottom td { padding: 4pt 8pt; border-bottom: 1px solid #dee2e6; }
+  table.float-bottom caption { font-size: 8pt; color: #666; font-style: italic; caption-side: bottom; padding-top: 4pt; }
+
+  .float-placeholder { padding: 20pt; text-align: center; background: #1a5276; color: #fff; border-radius: 4pt; }
+  .float-icon { font-size: 36pt; margin-bottom: 8pt; }
+  .float-label { font-size: 11pt; }
+
+  .footnotes { display: none; }
+  sup a { text-decoration: none; color: #2c3e50; font-size: 9pt; }
+  p.hyphenate { hyphens: auto; }
+
+  .toc { margin-bottom: 36pt; }
+  .toc h2 { font-size: 20pt; color: #111; border-bottom: 2px solid #333; margin-bottom: 18pt; }
+  .toc ul { list-style: none; padding: 0; margin: 0; }
+  .toc li { margin-bottom: 6pt; font-size: 12pt; }
+  .toc .leader::after { content: leader(dotted); }
+
+  .cover { page: cover; page-break-after: always; padding: 120pt 0; text-align: center; }
+  .cover h1 { font-size: 36pt; color: #111; border: none; margin-bottom: 12pt; }
+  .cover .subtitle { font-size: 16pt; color: #555; margin-bottom: 24pt; }
+  .cover .author { font-size: 12pt; color: #777; }
+  .cover .date { font-size: 11pt; color: #999; }
+
+  .chapter { page-break-before: always; }
+
+  .overflow-demo { margin: 12pt 0; padding: 12pt; border: 1px solid #dee2e6; border-radius: 4pt; background: #f8f9fa; }
+  .overflow-demo figcaption { font-size: 9pt; color: #666; font-style: italic; margin-top: 8pt; }
+  .overflow-placeholder { padding: 24pt; text-align: center; background: #6c3483; color: #fff; border-radius: 4pt; }
+  .overflow-icon { font-size: 36pt; margin-bottom: 8pt; }
+  .overflow-label { font-size: 12pt; margin-bottom: 4pt; }
+  .overflow-note { font-size: 9pt; opacity: .8; }
+</style>
+
+<div id="source-content">
+  <section class="cover">
+    <h1>PaperView</h1>
+    <p class="subtitle">Biblioteca de maquetación CSS Paged Media</p>
+    <p class="author">Demo interactiva de funcionalidades</p>
+    <p class="date">Mayo 2026</p>
+  </section>
+
+  <section class="toc">
+    <h2>Tabla de Contenidos</h2>
+    <ul>
+      <li>1. Introducción <span class="leader"></span> 3</li>
+      <li>2. Page Floats <span class="leader"></span> 4</li>
+      <li>3. Footnotes <span class="leader"></span> 5</li>
+      <li>4. Hyphenation <span class="leader"></span> 6</li>
+      <li>5. Image Overflow <span class="leader"></span> 7</li>
+    </ul>
+  </section>
+
+  <section class="chapter">
+    <h1>Capítulo 1: Introducción</h1>
+    <p>PaperView es una biblioteca JavaScript para la maquetación de medios paginados, basada en paged.js. Permite renderizar contenido HTML en páginas respetando las reglas CSS Paged Media.</p>
+    <p>Soporta <code>@page</code>, <code>@bottom-center</code>, <code>page-break-before</code>, y muchas más funcionalidades avanzadas de maquetación.</p>
+
+    <figure class="float-top">
+      <div class="float-placeholder"><div class="float-icon">📊</div><div class="float-label">Figura 1.1: Page Float Top</div></div>
+      <figcaption>Esta figura usa <code>float: top</code> para posicionarse en la parte superior de la página.</figcaption>
+    </figure>
+
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.</p>
+    <p>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+
+    <p>Este párrafo contiene una nota al pie.<sup id="fnref1"><a href="#fn1">1</a></sup> PaperView procesa y posiciona automáticamente las notas.</p>
+
+    <table class="float-bottom">
+      <thead><tr><th>Característica</th><th>Estado</th><th>Módulo</th></tr></thead>
+      <tbody>
+        <tr><td>Page Floats</td><td>✅</td><td>page-floats.ts</td></tr>
+        <tr><td>Footnotes</td><td>✅</td><td>footnotes.ts</td></tr>
+        <tr><td>Hyphenation</td><td>✅</td><td>hyphens.ts</td></tr>
+        <tr><td>Image Overflow</td><td>✅</td><td>image-overflow.js</td></tr>
+        <tr><td>Page Numbering</td><td>✅</td><td>page-numbering/</td></tr>
+      </tbody>
+      <caption>Tabla 1.1: Resumen de features</caption>
+    </table>
+  </section>
+
+  <section class="chapter">
+    <h1>Capítulo 2: Page Floats</h1>
+    <p>Las page floats desplazan elementos a posiciones específicas de la página usando <code>float: top</code>, <code>float: bottom</code>, <code>float: next</code>, etc.</p>
+
+    <figure class="float-top">
+      <div class="float-placeholder" style="background:#2d6a4f"><div class="float-icon">📈</div><div class="float-label">Gráfico: Crecimiento de features</div></div>
+      <figcaption><strong>Page Float Top</strong> — Elemento desplazado al tope de página.</figcaption>
+    </figure>
+
+    <p>Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur.</p>
+
+    <table class="float-bottom">
+      <thead><tr><th>Valor</th><th>Descripción</th><th>Soporte</th></tr></thead>
+      <tbody>
+        <tr><td><code>top</code></td><td>Desplaza al tope de página</td><td>✅</td></tr>
+        <tr><td><code>bottom</code></td><td>Desplaza al fondo de página</td><td>✅</td></tr>
+        <tr><td><code>next</code></td><td>Siguiente página/columna</td><td>✅</td></tr>
+        <tr><td><code>snap</code></td><td>Cerca del punto de referencia</td><td>✅</td></tr>
+      </tbody>
+      <caption>Valores soportados por page-floats.ts</caption>
+    </table>
+  </section>
+
+  <section class="chapter">
+    <h1>Capítulo 3: Footnotes</h1>
+    <p>Las notas al pie se definen mediante la relación entre un llamado <code>&lt;sup&gt;</code> y el contenido de la nota. PaperView las extrae, numera y posiciona al pie de la página.<sup id="fnref2"><a href="#fn2">2</a></sup></p>
+    <p>La implementación incluye:<sup id="fnref3"><a href="#fn3">3</a></sup></p>
+    <ul>
+      <li>Numeración automática de notas</li>
+      <li>Posicionamiento al pie de la página correcta</li>
+      <li>Soporte para múltiples notas por página</li>
+    </ul>
+    <p>Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet.<sup id="fnref4"><a href="#fn4">4</a></sup></p>
+  </section>
+
+  <section class="chapter">
+    <h1>Capítulo 4: Hyphenation</h1>
+    <p>La separación silábica automática divide palabras al final de línea para mejorar la justificación del texto.</p>
+    <p class="hyphenate">Incomprehensibilities, antidisestablishment, and electroencephalographically are examples of long English words that demonstrate the importance of hyphenation in justified text layouts.</p>
+    <p class="hyphenate">La implementación del motor de separación silábica se encuentra en <code>src/utils/hyphenator.ts</code> con patrones para múltiples idiomas.</p>
+  </section>
+
+  <section class="chapter">
+    <h1>Capítulo 5: Image Overflow</h1>
+    <p>El módulo <code>image-overflow.js</code> detecta imágenes que exceden el área de contenido y las redimensiona proporcionalmente.</p>
+    <figure class="overflow-demo">
+      <div class="overflow-placeholder"><div class="overflow-icon">🖼️</div><div class="overflow-label">Imagen con manejo de overflow</div><div class="overflow-note">Se redimensiona automáticamente</div></div>
+      <figcaption>Módulo <code>image-overflow.js</code> en <code>src/modules/paged-media/</code></figcaption>
+    </figure>
+  </section>
+
+  <div class="footnotes">
+    <p id="fn1"><sup>1</sup> Nota al pie demostrando footnotes.ts. <a href="#fnref1">↩</a></p>
+    <p id="fn2"><sup>2</sup> Smith, J. (2024). "Paged Media in the Modern Web". <a href="#fnref2">↩</a></p>
+    <p id="fn3"><sup>3</sup> Numeración automática, múltiples notas, separador visual. <a href="#fnref3">↩</a></p>
+    <p id="fn4"><sup>4</sup> Itaque earum rerum hic tenetur a sapiente delectus. <a href="#fnref4">↩</a></p>
+  </div>
+</div>
+
+<script src="../dist/paperview.js"></script>
+<script>
+// ================================================================
+// FEATURES
+// ================================================================
+const FEATURES = [
+  { id: 'page-num', name: 'Numeración de páginas', desc: 'Posiciones, estilos y templates', tag: 'new', tagLabel: 'Nuevo',
+    module: 'src/modules/page-numbering/',
+    files: ['config.js', 'formatter.js', 'positions.js', 'handler.js', 'renderer.js'],
+    api: 'flow.setPageNumberingEnabled(true)\nflow.updatePageNumbering({ position, style })' },
+  { id: 'lazy', name: 'Lazy Rendering', desc: 'Renderizado bajo demanda', tag: 'new', tagLabel: 'Nuevo',
+    module: 'src/polyfill/lazy-renderer.js',
+    api: 'new PaperView.Previewer({ lazyRender: true })' },
+  { id: 'workers', name: 'Web Workers', desc: 'Layout en hilo separado', tag: 'new', tagLabel: 'Nuevo',
+    module: 'src/chunker/layout-worker-manager.js',
+    api: 'new PaperView.Previewer({ useWorkers: true })' },
+  { id: 'pdf', name: 'Exportación PDF', desc: 'Desde navegador o Node.js', tag: 'new', tagLabel: 'Nuevo',
+    module: 'src/export/',
+    files: ['browser-pdf-exporter.js', 'node-pdf-exporter.js'],
+    api: 'await previewer.exportPDF({ filename })' },
+  { id: 'floats', name: 'Page Floats', desc: 'float: top, bottom, next', tag: 'core', tagLabel: 'Core',
+    module: 'src/modules/paged-media/page-floats.ts',
+    api: 'figure { float: top; }' },
+  { id: 'footnotes', name: 'Footnotes', desc: 'Notas al pie automáticas', tag: 'core', tagLabel: 'Core',
+    module: 'src/modules/paged-media/footnotes.ts',
+    api: '<sup><a href="#fn1">1</a></sup>' },
+  { id: 'hyphens', name: 'Hyphenation', desc: 'Separación silábica', tag: 'core', tagLabel: 'Core',
+    module: 'src/modules/paged-media/hyphens.ts',
+    files: ['src/utils/hyphenator.ts'],
+    api: 'p { hyphens: auto; }' },
+  { id: 'overflow', name: 'Image Overflow', desc: 'Redimensiona imágenes', tag: 'core', tagLabel: 'Core',
+    module: 'src/modules/paged-media/image-overflow.js' },
+  { id: 'leader', name: 'Leader() TOC', desc: 'Relleno punteado TOC', tag: 'adv', tagLabel: 'Avanzado',
+    module: 'src/modules/generated-content/leader.ts',
+    api: '.leader::after { content: leader(dotted); }' },
+  { id: 'viewmode', name: 'Single / Spread', desc: 'Vista simple o doble', tag: 'adv', tagLabel: 'Avanzado',
+    module: 'src/polyfill/spread-viewer.ts',
+    api: 'new PaperView.Previewer({ viewMode:"spread" })' },
+  { id: 'page-insert', name: 'Page Insertion API', desc: 'Insertar páginas', tag: 'adv', tagLabel: 'Avanzado',
+    module: 'src/chunker/chunker.js',
+    api: 'flow.insertPage({ content, position })' },
+];
+
+// ================================================================
+// SIDEBAR
+// ================================================================
+const featureList = document.getElementById('featureList');
+const moduleInfo = document.getElementById('moduleInfo');
+
+FEATURES.forEach(f => {
+  const div = document.createElement('div');
+  div.className = 'feature-toggle';
+  div.dataset.id = f.id;
+  div.innerHTML = `
+    <input type="checkbox" id="f-${f.id}" ${f.id === 'page-num' ? 'checked' : ''}>
+    <div class="info">
+      <div class="name">${f.name}</div>
+      <div class="desc">${f.desc}</div>
+    </div>
+    <span class="tag tag-${f.tag}">${f.tagLabel}</span>
+  `;
+  div.addEventListener('click', e => {
+    if (e.target.tagName === 'INPUT') return;
+    const cb = div.querySelector('input');
+    cb.checked = !cb.checked;
+    div.classList.toggle('active', cb.checked);
+    showModuleInfo(f);
+  });
+  div.querySelector('input').addEventListener('change', () => {
+    div.classList.toggle('active', div.querySelector('input').checked);
+  });
+  featureList.appendChild(div);
+});
+
+function showModuleInfo(f) {
+  let html = `<strong>${f.name}</strong><br><code>${f.module}</code><br><br>`;
+  if (f.files) { html += '<strong>Archivos:</strong><br>' + f.files.map(x => `<code>${x}</code><br>`).join('') + '<br>'; }
+  if (f.api) { html += `<strong>API:</strong><br><code style="white-space:pre-wrap;display:block;margin-top:4px">${f.api.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</code>`; }
+  moduleInfo.innerHTML = html;
+}
+
+// ================================================================
+// VIEWER CONTROLS
+// ================================================================
+const $ = id => document.getElementById(id);
+const src = $('source-content');
+const dest = $('renderTo');
+const viewerScroll = $('viewerScroll');
+const viewMode = $('viewMode');
+const numStyle = $('numStyle');
+const numPos = $('numPos');
+const btnRender = $('btnRender');
+const btnExport = $('btnExport');
+const btnPrev = $('btnPrev');
+const btnNext = $('btnNext');
+const btnZoomIn = $('btnZoomIn');
+const btnZoomOut = $('btnZoomOut');
+const btnZoomFit = $('btnZoomFit');
+const currentPageEl = $('currentPage');
+const totalPagesEl = $('totalPages');
+const zoomDisplay = $('zoomDisplay');
+const sPages = $('sPages');
+const sTime = $('sTime');
+const sStatus = $('sStatus');
+
+let previewer = null;
+let _rendering = false;
+let _zoom = 1;
+let _totalPages = 0;
+let _currentPage = 0;
+
+function setStatus(text, type) {
+  sStatus.textContent = text;
+  sStatus.className = 'pill ' + (type || 'ready');
+}
+
+function updatePageNav() {
+  currentPageEl.textContent = _currentPage;
+  totalPagesEl.textContent = _totalPages;
+  btnPrev.disabled = _currentPage <= 1;
+  btnNext.disabled = _currentPage >= _totalPages;
+}
+
+function updateZoom() {
+  zoomDisplay.textContent = Math.round(_zoom * 100) + '%';
+  const pages = dest.querySelectorAll('.pagedjs_page');
+  pages.forEach(p => { p.style.transform = `scale(${_zoom})`; });
+}
+
+function scrollToPage(index) {
+  const pages = dest.querySelectorAll('.pagedjs_page');
+  if (index < 1 || index > pages.length) return;
+  const page = pages[index - 1];
+  page.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  _currentPage = index;
+  updatePageNav();
+}
+
+function goToPrevPage() { if (_currentPage > 1) scrollToPage(_currentPage - 1); }
+function goToNextPage() { if (_currentPage < _totalPages) scrollToPage(_currentPage + 1); }
+
+btnPrev.addEventListener('click', goToPrevPage);
+btnNext.addEventListener('click', goToNextPage);
+
+btnZoomIn.addEventListener('click', () => {
+  _zoom = Math.min(2, _zoom + 0.1);
+  updateZoom();
+});
+btnZoomOut.addEventListener('click', () => {
+  _zoom = Math.max(0.3, _zoom - 0.1);
+  updateZoom();
+});
+btnZoomFit.addEventListener('click', () => {
+  const pages = dest.querySelectorAll('.pagedjs_page');
+  if (!pages.length) return;
+  const page = pages[0];
+  const containerWidth = viewerScroll.clientWidth - 64;
+  const pageWidth = page.offsetWidth;
+  _zoom = Math.min(1, containerWidth / pageWidth);
+  updateZoom();
+});
+
+viewerScroll.addEventListener('scroll', () => {
+  const pages = dest.querySelectorAll('.pagedjs_page');
+  if (!pages.length) return;
+  const scrollTop = viewerScroll.scrollTop;
+  const containerTop = viewerScroll.getBoundingClientRect().top;
+  let current = 1;
+  pages.forEach((page, i) => {
+    const rect = page.getBoundingClientRect();
+    if (rect.top - containerTop < 100) current = i + 1;
+  });
+  if (current !== _currentPage) {
+    _currentPage = current;
+    updatePageNav();
+  }
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') { e.preventDefault(); goToPrevPage(); }
+  if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { e.preventDefault(); goToNextPage(); }
+  if (e.key === '+' || e.key === '=') { _zoom = Math.min(2, _zoom + 0.1); updateZoom(); }
+  if (e.key === '-') { _zoom = Math.max(0.3, _zoom - 0.1); updateZoom(); }
+});
+
+// ================================================================
+// RENDER
+// ================================================================
+async function renderAllLazyPages() {
+  if (!previewer || !previewer.lazyRenderer) return;
+  const lazy = previewer.lazyRenderer;
+  for (let i = 0; i < lazy.totalPages; i++) await lazy.renderPage(i);
+}
+
+async function applyPageNum() {
+  if (!previewer || !previewer.chunker) return;
+  const c = previewer.chunker;
+  const enabled = document.getElementById('f-page-num')?.checked;
+
+  if (!enabled) {
+    c.setPageNumberingEnabled(false);
+    dest.querySelectorAll('.pagedjs-page-number').forEach(el => el.remove());
+    return;
+  }
+
+  if (previewer.lazyRenderer) await renderAllLazyPages();
+
+  c.setPageNumberingEnabled(true);
+  c.updatePageNumbering({ style: numStyle.value, position: numPos.value, enabled: true });
+
+  c.pages.forEach((page, i) => {
+    if (page.blank || !page.element) return;
+    const hiddenNum = page.element.querySelector('.pagedjs-page-number');
+    if (!hiddenNum) return;
+    let visible = dest.querySelector(`[data-lazy-index="${i}"]`);
+    if (!visible) visible = page.element;
+    visible.querySelectorAll('.pagedjs-page-number').forEach(el => el.remove());
+    visible.appendChild(hiddenNum.cloneNode(true));
+  });
+}
+
+async function render() {
+  if (_rendering) return;
+  _rendering = true;
+
+  await new Promise(r => setTimeout(r, 50));
+
+  if (previewer) { previewer.destroy(); previewer = null; }
+  dest.innerHTML = '';
+  btnExport.disabled = true;
+  setStatus('Renderizando…', 'busy');
+  _zoom = 1;
+  _currentPage = 0;
+  _totalPages = 0;
+  updatePageNav();
+  updateZoom();
+
+  const t0 = performance.now();
+
+  previewer = new PaperView.Previewer({
+    viewMode: viewMode.value,
+    lazyRender: false,
+    useWorkers: false
+  });
+
+  previewer.on("rendering", () => {
+    sTime.textContent = Math.round(performance.now() - t0) + 'ms';
+    if (previewer.chunker) {
+      sPages.textContent = previewer.chunker.total;
+      _totalPages = previewer.chunker.total;
+      _currentPage = 1;
+      updatePageNav();
+    }
+  });
+
+  try {
+    await previewer.preview(src, dest, ['assets/styles/paper.css']);
+    sPages.textContent = previewer.chunker ? previewer.chunker.total : 0;
+    _totalPages = previewer.chunker ? previewer.chunker.total : 0;
+    _currentPage = _totalPages > 0 ? 1 : 0;
+    sTime.textContent = Math.round(performance.now() - t0) + 'ms';
+    setStatus('Completado', 'done');
+    updatePageNav();
+
+    await applyPageNum();
+    btnExport.disabled = false;
+
+    setTimeout(() => btnZoomFit.click(), 100);
+  } catch (err) {
+    console.error(err);
+    setStatus('Error: ' + err.message, 'off');
+  }
+
+  _rendering = false;
+}
+
+btnRender.addEventListener('click', render);
+
+btnExport.addEventListener('click', async () => {
+  if (!previewer) return;
+  setStatus('Exportando PDF…', 'busy');
+  try {
+    if (previewer.lazyRenderer) {
+      previewer.lazyRenderer.renderAllPages();
+      await new Promise(r => setTimeout(r, 500));
+    }
+    await previewer.exportPDF({ filename: 'paperview-demo.pdf' });
+    setStatus('PDF exportado', 'done');
+  } catch (err) {
+    setStatus('Error PDF: ' + err.message, 'off');
+  }
+});
+
+numStyle.addEventListener('change', () => { if (previewer) applyPageNum(); });
+numPos.addEventListener('change', () => { if (previewer) applyPageNum(); });
+
+render();
+</script>
+</body>
+</html>

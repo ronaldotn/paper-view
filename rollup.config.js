@@ -24,8 +24,7 @@ import pkg from './package.json' with { type: 'json' };
     }),
     copy({
         targets: [
-            {src: './examples/assets/styles/**/*', dest: './dist/css'},
-            {src: './src/chunker/layout.worker.js', dest: './dist'}
+            {src: './examples/assets/styles/**/*', dest: './dist/css'}
         ]
     }),
     terser({
@@ -76,7 +75,7 @@ export default [
         plugins: plugins
     },
     {
-        input: "./src/polyfill/polyfill.js",
+        input: "./src/polyfill/polyfill.ts",
         output: {
             name: 'PaperViewPolyfill',
             file: "./dist/paperview.polyfill.js",
@@ -86,7 +85,7 @@ export default [
     },
     // Node.js PDF Exporter (CommonJS)
     {
-        input: "./src/export/node-pdf-exporter.js",
+        input: "./src/export/node-pdf-exporter.ts",
         output: {
             name: 'PaperViewNodePDFExporter',
             file: "./dist/paperview.node-pdf.js",
@@ -94,5 +93,14 @@ export default [
         },
         plugins: plugins,
         external: ['puppeteer', 'fs', 'path']
+    },
+    // Layout Web Worker (standalone)
+    {
+        input: "./src/chunker/layout.worker.ts",
+        output: {
+            file: "./dist/layout.worker.js",
+            format: 'iife'
+        },
+        plugins: plugins
     }
 ];

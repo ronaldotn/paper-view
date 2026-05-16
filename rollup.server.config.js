@@ -66,7 +66,7 @@ export default [
     },
 
     {
-        input: "./src/polyfill/polyfill.js",
+        input: "./src/polyfill/polyfill.ts",
         output: {
             name: 'PaperViewPolyfill',
             file: "./dist/paperview.polyfill.js",

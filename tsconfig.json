@@ -5,14 +5,18 @@
     "moduleResolution": "bundler",
     "strict": true,
     "esModuleInterop": true,
-    "allowJs": true,
+    "allowJs": false,
     "checkJs": false,
     "outDir": "./dist",
     "rootDir": "./src",
     "declaration": false,
     "sourceMap": false,
-    "lib": ["ES2018", "DOM", "DOM.Iterable"]
+    "lib": ["ES2018", "DOM", "DOM.Iterable"],
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/types/**/*.d.ts"],
   "exclude": ["node_modules", "dist", "tests", "specs"]
 }

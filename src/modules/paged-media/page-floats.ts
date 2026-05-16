@@ -350,98 +350,89 @@ class PageFloats extends Handler {
 	addFloatStyles(): void {
 		if (!this.polisher || !this.polisher.styleSheet) return;
 
-		const css = `
-			.pagedjs_page_float {
-				position: relative;
-				z-index: 1;
-			}
+		const css = `.pagedjs_page_float {
+	position: relative;
+	z-index: 1;
+}
+.pagedjs_float_top_area {
+	display: flex;
+	flex-direction: column;
+	gap: 12pt;
+	margin-bottom: 12pt;
+}
+.pagedjs_float_top_area_content {
+	display: flex;
+	flex-direction: column;
+	gap: 12pt;
+}
+.pagedjs_float_bottom_area {
+	display: flex;
+	flex-direction: column;
+	gap: 12pt;
+	margin-top: 12pt;
+}
+.pagedjs_float_bottom_area_content {
+	display: flex;
+	flex-direction: column;
+	gap: 12pt;
+}
+.pagedjs_float_page_area {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 10;
+}
+.pagedjs_float_page_area_content {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 12pt;
+}
+.pagedjs_float_here {
+	margin: 12pt 0;
+}
+.pagedjs_float_top {
+	margin-bottom: 12pt;
+}
+.pagedjs_float_bottom {
+	margin-top: 12pt;
+}
+.pagedjs_float_page {
+	max-width: 90%;
+	max-height: 90%;
+}
+[data-page-float-processed="true"] {
+	display: none !important;
+}
+figure[data-page-float="top"],
+figure[data-page-float="bottom"],
+figure[data-page-float="page"],
+figure[data-page-float="here"] {
+	margin: 0;
+	padding: 0;
+}
+table[data-page-float="top"],
+table[data-page-float="bottom"],
+table[data-page-float="page"],
+table[data-page-float="here"] {
+	margin: 0;
+}`;
 
-			.pagedjs_float_top_area {
-				display: flex;
-				flex-direction: column;
-				gap: 12pt;
-				margin-bottom: 12pt;
+		const rules = css.match(/[^}]+}/g) || [];
+		for (const rule of rules) {
+			const trimmed = rule.trim();
+			if (trimmed) {
+				this.polisher.styleSheet.insertRule(trimmed, this.polisher.styleSheet.cssRules.length);
 			}
-
-			.pagedjs_float_top_area_content {
-				display: flex;
-				flex-direction: column;
-				gap: 12pt;
-			}
-
-			.pagedjs_float_bottom_area {
-				display: flex;
-				flex-direction: column;
-				gap: 12pt;
-				margin-top: 12pt;
-			}
-
-			.pagedjs_float_bottom_area_content {
-				display: flex;
-				flex-direction: column;
-				gap: 12pt;
-			}
-
-			.pagedjs_float_page_area {
-				position: absolute;
-				top: 0;
-				left: 0;
-				right: 0;
-				bottom: 0;
-				display: flex;
-				align-items: center;
-				justify-content: center;
-				z-index: 10;
-			}
-
-			.pagedjs_float_page_area_content {
-				display: flex;
-				flex-direction: column;
-				align-items: center;
-				gap: 12pt;
-			}
-
-			.pagedjs_float_here {
-				margin: 12pt 0;
-			}
-
-			.pagedjs_float_top {
-				margin-bottom: 12pt;
-			}
-
-			.pagedjs_float_bottom {
-				margin-top: 12pt;
-			}
-
-			.pagedjs_float_page {
-				max-width: 90%;
-				max-height: 90%;
-			}
-
-			[data-page-float-processed="true"] {
-				display: none !important;
-			}
-
-			figure[data-page-float="top"],
-			figure[data-page-float="bottom"],
-			figure[data-page-float="page"],
-			figure[data-page-float="here"] {
-				margin: 0;
-				padding: 0;
-			}
-
-			table[data-page-float="top"],
-			table[data-page-float="bottom"],
-			table[data-page-float="page"],
-			table[data-page-float="here"] {
-				margin: 0;
-			}
-		`;
-
-		this.polisher.styleSheet.insertRule(css, this.polisher.styleSheet.cssRules.length);
+		}
 	}
 
-	afterRendered(doc: Document): void {
+	afterRendered(_pages: any, _chunker: any): void {
 		this.addFloatStyles();
 	}
 

@@ -324,13 +324,13 @@ export class SpreadViewer {
 		`;
 
 		zoomControls
-			.querySelector('[data-action="zoom-out"]')!
+			.querySelector("[data-action=\"zoom-out\"]")!
 			.addEventListener("click", () => this.zoomOut());
 		zoomControls
-			.querySelector('[data-action="zoom-in"]')!
+			.querySelector("[data-action=\"zoom-in\"]")!
 			.addEventListener("click", () => this.zoomIn());
 		zoomControls
-			.querySelector('[data-action="zoom-fit"]')!
+			.querySelector("[data-action=\"zoom-fit\"]")!
 			.addEventListener("click", () => this.zoomToFit());
 
 		wrapper.appendChild(zoomControls);
@@ -747,7 +747,7 @@ export class SpreadViewer {
 
 		// Remove injected styles
 		const style = document.querySelector(
-			'style[data-spread-viewer="true"]'
+			"style[data-spread-viewer=\"true\"]"
 		);
 		if (style) style.remove();
 

@@ -104,7 +104,7 @@ class Leader extends Handler {
 	private escapeLeaderString(str: string): string {
 		return str
 			.replace(/\\/g, "\\\\")
-			.replace(/"/g, '\\"')
+			.replace(/"/g, "\\\"")
 			.replace(/\n/g, "\\00000A");
 	}
 
@@ -259,56 +259,53 @@ class Leader extends Handler {
 	addLeaderStyles(): void {
 		if (!this.polisher || !this.polisher.styleSheet) return;
 
-		const css = `
-			.pagedjs_leader {
-				display: inline-block;
-				flex: 1;
-				overflow: hidden;
-				text-align: justify;
-				letter-spacing: 0.1em;
-				line-height: 1;
-				white-space: nowrap;
-			}
+		const css = `.pagedjs_leader {
+	display: inline-block;
+	flex: 1;
+	overflow: hidden;
+	text-align: justify;
+	letter-spacing: 0.1em;
+	line-height: 1;
+	white-space: nowrap;
+}
+.pagedjs_leader[data-leader-type="dotted"] {
+	letter-spacing: 0.15em;
+}
+.pagedjs_leader[data-leader-type="solid"] {
+	border-bottom: 1px solid currentColor;
+	letter-spacing: 0;
+}
+.pagedjs_leader[data-leader-type="solid"]::after {
+	content: "";
+}
+.pagedjs_leader[data-leader-type="space"] {
+	letter-spacing: 0.5em;
+}
+.pagedjs_leader_pagenum {
+	flex-shrink: 0;
+	text-align: right;
+	margin-left: 0.5em;
+}
+.pagedjs_leader_title {
+	flex-shrink: 0;
+}
+.toc-entry,
+[data-leader-processed="true"] {
+	display: flex;
+	align-items: baseline;
+	gap: 0;
+}`;
 
-			.pagedjs_leader[data-leader-type="dotted"] {
-				letter-spacing: 0.15em;
+		const rules = css.match(/[^}]+}/g) || [];
+		for (const rule of rules) {
+			const trimmed = rule.trim();
+			if (trimmed) {
+				this.polisher.styleSheet.insertRule(trimmed, this.polisher.styleSheet.cssRules.length);
 			}
-
-			.pagedjs_leader[data-leader-type="solid"] {
-				border-bottom: 1px solid currentColor;
-				letter-spacing: 0;
-			}
-
-			.pagedjs_leader[data-leader-type="solid"]::after {
-				content: "";
-			}
-
-			.pagedjs_leader[data-leader-type="space"] {
-				letter-spacing: 0.5em;
-			}
-
-			.pagedjs_leader_pagenum {
-				flex-shrink: 0;
-				text-align: right;
-				margin-left: 0.5em;
-			}
-
-			.pagedjs_leader_title {
-				flex-shrink: 0;
-			}
-
-			.toc-entry,
-			[data-leader-processed="true"] {
-				display: flex;
-				align-items: baseline;
-				gap: 0;
-			}
-		`;
-
-		this.polisher.styleSheet.insertRule(css, this.polisher.styleSheet.cssRules.length);
+		}
 	}
 
-	afterRendered(doc: Document): void {
+	afterRendered(_pages: any, _chunker: any): void {
 		this.addLeaderStyles();
 	}
 

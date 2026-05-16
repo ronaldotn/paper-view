@@ -269,75 +269,54 @@ class Footnotes extends Handler {
 	addFootnoteStyles(): void {
 		if (!this.polisher || !this.polisher.styleSheet) return;
 
-		const css = `
-			.pagedjs_footnote_call {
-				font-size: 0.75em;
-				vertical-align: super;
-				line-height: 0;
-				cursor: pointer;
-				color: #0066cc;
-			}
+		const css = `.pagedjs_footnote_call {
+	font-size: 0.75em;
+	vertical-align: super;
+	line-height: 0;
+	cursor: pointer;
+	color: #0066cc;
+}
+.pagedjs_footnote_call:hover {
+	text-decoration: underline;
+}
+.pagedjs_footnote_area {
+	display: none;
+}
+.pagedjs_footnote_area_content {
+	display: flex;
+	flex-direction: column;
+	gap: 4pt;
+}
+.pagedjs_footnote {
+	display: flex;
+	gap: 4pt;
+	font-size: 9pt;
+	line-height: 1.3;
+}
+.pagedjs_footnote_marker {
+	font-size: 0.75em;
+	vertical-align: super;
+	line-height: 0;
+}
+.pagedjs_footnote_content {
+	flex: 1;
+	font-size: 9pt;
+}`;
 
-			.pagedjs_footnote_call:hover {
-				text-decoration: underline;
-			}
-
-			.pagedjs_footnote_area {
-				display: none;
-			}
-
-			.pagedjs_footnote_area_content {
-				display: flex;
-				flex-direction: column;
-				gap: 4pt;
-			}
-
-			.pagedjs_footnote {
-				display: flex;
-				gap: 4pt;
-				font-size: 9pt;
-				line-height: 1.3;
-			}
-
-			.pagedjs_footnote_marker {
-				font-size: 0.75em;
-				vertical-align: super;
-				flex-shrink: 0;
-				width: 1.5em;
-				text-align: right;
-			}
-
-			.pagedjs_footnote_content {
-				flex: 1;
-			}
-
-			.pagedjs_footnote_content p {
-				display: inline;
-				margin: 0;
-				padding: 0;
-			}
-
-			[data-footnote-original="true"] {
-				display: none !important;
-			}
-
-			@counter-style footnote {
-				system: numeric;
-				symbols: "1" "2" "3" "4" "5" "6" "7" "8" "9" "10";
-			}
-		`;
-
-		this.polisher.styleSheet.insertRule(css, this.polisher.styleSheet.cssRules.length);
+		const rules = css.split(/\n(?=[^}]*\{)/).map(r => r.trim()).filter(Boolean);
+		for (const rule of rules) {
+			this.polisher.styleSheet.insertRule(rule, this.polisher.styleSheet.cssRules.length);
+		}
 	}
 
-	afterRendered(doc: Document): void {
+	afterRendered(_pages: any, _chunker: any): void {
 		this.addFootnoteStyles();
 
-		const calls = doc.querySelectorAll(".pagedjs_footnote_call");
+		const calls = document.querySelectorAll(".pagedjs_footnote_call");
 		calls.forEach((call) => {
 			call.addEventListener("click", (e) => {
 				const fnNumber = (call as HTMLElement).dataset.footnoteCall;
-				const footnote = doc.querySelector(`[data-ref="footnote-${fnNumber}"]`);
+				const footnote = document.querySelector(`[data-ref="footnote-${fnNumber}"]`);
 				if (footnote) {
 					footnote.scrollIntoView({ behavior: "smooth", block: "nearest" });
 					(footnote as HTMLElement).style.backgroundColor = "#ffffcc";

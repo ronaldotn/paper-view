@@ -6,6 +6,8 @@
 
 > A JavaScript library for paged media viewing. Fork of [paged.js](https://www.pagedmedia.org/paged-js/) with enhanced support for browser, Angular, and Vue.
 
+![PaperView Screenshot](docs/images/Screenshot-PaperView.png)
+
 ---
 
 ## Table of Contents
