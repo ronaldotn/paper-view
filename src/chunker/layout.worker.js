@@ -180,9 +180,20 @@ function cloneNode(node, deep) {
 function calculateLayout(task) {
 	const { serializedSource, bounds, maxChars, breakTokenIndex } = task;
 
+	if (!serializedSource) {
+		return { error: "Serialized source is null or undefined" };
+	}
+
 	const tempDoc = {
 		createTextNode: (text) => ({ nodeType: 3, textContent: text }),
-		createElement: (tag) => ({ nodeType: 1, tagName: tag, dataset: {}, children: [] })
+		createElement: (tag) => {
+			const el = { nodeType: 1, tagName: tag, dataset: {}, childNodes: [] };
+			el.children = el.childNodes;
+			el.appendChild = function(child) {
+				this.childNodes.push(child);
+			};
+			return el;
+		}
 	};
 
 	const source = deserializeNode(serializedSource, tempDoc);
@@ -191,20 +202,20 @@ function calculateLayout(task) {
 	}
 
 	const boundsObj = {
-		width: bounds.width,
-		height: bounds.height,
-		left: bounds.left || 0,
-		right: bounds.right || bounds.width,
-		top: bounds.top || 0,
-		bottom: bounds.bottom || bounds.height
+		width: bounds ? bounds.width : 800,
+		height: bounds ? bounds.height : 1000,
+		left: (bounds && bounds.left) || 0,
+		right: (bounds && bounds.right) || (bounds ? bounds.width : 800),
+		top: (bounds && bounds.top) || 0,
+		bottom: (bounds && bounds.bottom) || (bounds ? bounds.height : 1000)
 	};
 
-	let currentBreakToken = breakTokenIndex ? { node: findNodeByIndex(source, breakTokenIndex), offset: 0 } : null;
+	let currentBreakToken = breakTokenIndex != null ? { node: findNodeByIndex(source, breakTokenIndex), offset: 0 } : null;
 	let nodesProcessed = 0;
 	let breakFound = false;
 	let breakNodeIndex = null;
 
-	const startNode = currentBreakToken ? currentBreakToken.node : source.firstChild;
+	const startNode = currentBreakToken && currentBreakToken.node ? currentBreakToken.node : source.childNodes && source.childNodes[0];
 	const walker = walk(startNode, source);
 
 	let result;
@@ -283,6 +294,9 @@ self.onmessage = function(e) {
 	switch (type) {
 		case "CALCULATE_LAYOUT":
 			try {
+				if (!payload || !payload.serializedSource) {
+					throw new Error("Invalid payload: missing serializedSource");
+				}
 				const result = calculateLayout(payload);
 				self.postMessage({
 					type: "LAYOUT_RESULT",
@@ -292,8 +306,8 @@ self.onmessage = function(e) {
 			} catch (error) {
 				self.postMessage({
 					type: "LAYOUT_ERROR",
-					taskId: payload.taskId,
-					error: error.message
+					taskId: payload ? payload.taskId : null,
+					error: error.message + " at " + (error.stack || "").split("\n")[1]
 				});
 			}
 			break;

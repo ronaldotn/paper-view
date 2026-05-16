@@ -268,6 +268,10 @@ class Page {
 	}
 
 
+	get overset() {
+		return this.endToken !== undefined && this.endToken !== null;
+	}
+
 	destroy() {
 		this.removeListeners();
 

@@ -6,12 +6,12 @@ function getWorkerUrl() {
 	try {
 		const importMetaUrl = (0, eval)("import.meta.url");
 		if (importMetaUrl) {
-			return new URL("./layout.worker.js", importMetaUrl).href;
+			return new URL("layout.worker.js", importMetaUrl).href;
 		}
 	} catch (e) {
 	}
 
-	return "./layout.worker.js";
+	return "layout.worker.js";
 }
 
 class LayoutWorkerManager {
@@ -43,18 +43,31 @@ class LayoutWorkerManager {
 		const promises = [];
 
 		for (let i = 0; i < this.workerCount; i++) {
-			const promise = new Promise((resolve) => {
+			const promise = new Promise((resolve, reject) => {
 				let worker;
 				try {
 					worker = new Worker(this.workerUrl, { type: "module" });
 				} catch (e) {
-					worker = new Worker(this.workerUrl);
+					try {
+						worker = new Worker(this.workerUrl);
+					} catch (e2) {
+						console.error("Failed to create worker:", e2);
+						reject(e2);
+						return;
+					}
 				}
+
+				const initTimeout = setTimeout(() => {
+					const err = new Error(`Worker ${i} failed to initialize within 5 seconds`);
+					worker.terminate();
+					reject(err);
+				}, 5000);
 
 				worker.onmessage = (e) => {
 					const { type, taskId, result, error, workerId } = e.data;
 
 					if (type === "WORKER_READY" || type === "INITIALIZED") {
+						clearTimeout(initTimeout);
 						this.readyWorkers++;
 						if (this.readyWorkers === this.workerCount) {
 							this.initialized = true;
@@ -70,10 +83,20 @@ class LayoutWorkerManager {
 					}
 				};
 
-				worker.onerror = (error) => {
-					console.error("Layout worker error:", error);
-					this.handleWorkerError(i, error);
+			worker.onerror = (error) => {
+				clearTimeout(initTimeout);
+				const errorDetails = {
+					message: error.message || error.toString() || "Worker script error occurred",
+					filename: error.filename || this.workerUrl || "unknown",
+					lineno: error.lineno || 0,
+					colno: error.colno || 0,
+					workerIndex: i,
+					errorObject: error
 				};
+				console.error("Layout worker error:", errorDetails);
+				this.handleWorkerError(i, errorDetails);
+				reject(new Error(errorDetails.message));
+			};
 
 				this.workers.push({
 					instance: worker,
@@ -86,7 +109,13 @@ class LayoutWorkerManager {
 			promises.push(promise);
 		}
 
-		await Promise.all(promises);
+		try {
+			await Promise.all(promises);
+		} catch (e) {
+			console.warn("Worker initialization failed, falling back to main thread:", e.message);
+			this.initialized = false;
+			this.terminate();
+		}
 	}
 
 	async calculateLayout(serializedSource, bounds, maxChars, breakTokenIndex) {
@@ -174,6 +203,8 @@ class LayoutWorkerManager {
 		}
 
 		const { worker, task } = activeTask;
+
+		console.error(`Worker task ${taskId} failed:`, error);
 
 		worker.busy = false;
 

@@ -4,18 +4,28 @@ import commonjs from '@rollup/plugin-commonjs';
 import terser from '@rollup/plugin-terser';
 import json from '@rollup/plugin-json';
 import copy from 'rollup-plugin-copy';
+import typescript from '@rollup/plugin-typescript';
 
 import pkg from './package.json' with { type: 'json' };
 
  const plugins = [
     resolve({
-        browser: true
+        browser: true,
+        extensions: ['.js', '.ts']
     }),
     commonjs(),
     json(),
+    typescript({
+        tsconfig: './tsconfig.json',
+        declaration: false,
+        sourceMap: false,
+        include: ['src/**/*.ts', 'src/**/*.js'],
+        exclude: 'node_modules/**'
+    }),
     copy({
         targets: [
-            {src: './examples/assets/styles/**/*', dest: './dist/css'}
+            {src: './examples/assets/styles/**/*', dest: './dist/css'},
+            {src: './src/chunker/layout.worker.js', dest: './dist'}
         ]
     }),
     terser({
@@ -25,6 +35,7 @@ import pkg from './package.json' with { type: 'json' };
     }),
     babel({
         exclude: 'node_modules/**',
+        extensions: ['.js', '.ts'],
         babelHelpers: 'runtime',
         presets: [
             [

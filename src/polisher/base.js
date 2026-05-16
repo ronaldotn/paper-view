@@ -267,6 +267,7 @@ export default `
 
 .pagedjs_page {
 	counter-increment: page;
+	counter-reset: footnote-call;
 	width: var(--pagedjs-width);
 	height: var(--pagedjs-height);
 }
@@ -453,6 +454,10 @@ img {
 	max-width: 100%;
 	height: auto;
 	object-fit: contain;
+}
+
+.pagedjs_hyphen {
+	hyphens: auto;
 }
 
 .pagedjs_pagebox .pagedjs_area img,

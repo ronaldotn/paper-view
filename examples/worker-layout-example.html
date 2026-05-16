@@ -231,6 +231,86 @@
             .timing-results .slower {
                 color: #dc3545;
             }
+
+            .progress-phases {
+                margin: 20px 0;
+                padding: 20px;
+                background: #fff;
+                border: 2px solid #e9ecef;
+                border-radius: 8px;
+            }
+
+            .progress-phases h4 {
+                margin: 0 0 15px 0;
+                color: #333;
+            }
+
+            .phase {
+                display: flex;
+                align-items: center;
+                padding: 10px;
+                margin: 5px 0;
+                background: #f8f9fa;
+                border-radius: 5px;
+                transition: all 0.3s ease;
+            }
+
+            .phase.active {
+                background: #e3f2fd;
+                border-left: 4px solid #2196F3;
+            }
+
+            .phase.complete {
+                background: #e8f5e9;
+                border-left: 4px solid #4CAF50;
+            }
+
+            .phase-icon {
+                font-size: 20px;
+                margin-right: 15px;
+                width: 30px;
+                text-align: center;
+            }
+
+            .phase-label {
+                flex: 1;
+                font-weight: bold;
+                color: #333;
+            }
+
+            .phase-status {
+                color: #666;
+                font-size: 14px;
+            }
+
+            .explanation-box {
+                margin: 20px 0;
+                padding: 20px;
+                background: #fff3cd;
+                border: 2px solid #ffc107;
+                border-radius: 8px;
+            }
+
+            .explanation-box h4 {
+                margin: 0 0 10px 0;
+                color: #856404;
+            }
+
+            .explanation-box ul {
+                margin: 10px 0;
+                padding-left: 20px;
+            }
+
+            .explanation-box li {
+                margin: 5px 0;
+                color: #856404;
+            }
+
+            .metric-highlight {
+                font-size: 18px;
+                font-weight: bold;
+                color: #2196F3;
+            }
         </style>
     </head>
     <body>
@@ -279,20 +359,32 @@
                 <div class="comparison-card workers">
                     <h4>Web Workers (New)</h4>
                     <ul>
-                        <li>Layout in background threads</li>
+                        <li>Content analysis in background</li>
                         <li>UI stays responsive</li>
-                        <li>Parallel processing possible</li>
+                        <li>Parallel content processing</li>
                         <li>Better for large documents</li>
                     </ul>
                 </div>
             </div>
 
+            <div class="explanation-box">
+                <h4>📋 What This Example Demonstrates</h4>
+                <p><strong>Web Workers help with content analysis, not DOM manipulation.</strong></p>
+                <ul>
+                    <li><strong>Phase 1 - Initialize:</strong> Workers are created and prepared (only in Worker mode)</li>
+                    <li><strong>Phase 2 - Analyze Content:</strong> Workers scan text to find break points and overflow (off main thread)</li>
+                    <li><strong>Phase 3 - Layout Pages:</strong> Main thread creates actual page DOM elements (must be on main thread)</li>
+                    <li><strong>Phase 4 - Complete:</strong> All pages rendered and ready</li>
+                </ul>
+                <p><strong>Important:</strong> DOM manipulation cannot be done in workers. The benefit is that content analysis (finding where to break pages) happens in parallel, keeping the UI responsive.</p>
+            </div>
+
             <div class="controls">
-                <label for="pageCount">Pages:</label>
+                <label for="pageCount">Content Size:</label>
                 <select id="pageCount">
-                    <option value="20">20 pages</option>
-                    <option value="50" selected>50 pages</option>
-                    <option value="100">100 pages</option>
+                    <option value="20">20 pages (small)</option>
+                    <option value="50" selected>50 pages (medium)</option>
+                    <option value="100">100 pages (large)</option>
                 </select>
 
                 <label for="workerCount">Workers:</label>
@@ -300,7 +392,6 @@
                     <option value="1">1 worker</option>
                     <option value="2" selected>2 workers</option>
                     <option value="4">4 workers</option>
-                    <option value="8">8 workers</option>
                 </select>
 
                 <button id="renderMainBtn">
@@ -310,6 +401,30 @@
                 <button id="renderWorkerBtn" class="render-btn">
                     Render (Workers)
                 </button>
+            </div>
+
+            <div class="progress-phases" id="progressPhases" style="display: none;">
+                <h4>Processing Phases</h4>
+                <div class="phase" id="phaseInit">
+                    <span class="phase-icon">⏳</span>
+                    <span class="phase-label">Initialize</span>
+                    <span class="phase-status">Waiting...</span>
+                </div>
+                <div class="phase" id="phaseAnalyze">
+                    <span class="phase-icon">⏳</span>
+                    <span class="phase-label">Analyze Content</span>
+                    <span class="phase-status">Waiting...</span>
+                </div>
+                <div class="phase" id="phaseLayout">
+                    <span class="phase-icon">⏳</span>
+                    <span class="phase-label">Layout Pages</span>
+                    <span class="phase-status">Waiting...</span>
+                </div>
+                <div class="phase" id="phaseComplete">
+                    <span class="phase-icon">⏳</span>
+                    <span class="phase-label">Complete</span>
+                    <span class="phase-status">Waiting...</span>
+                </div>
             </div>
 
             <div class="worker-status" id="workerStatus" style="display: none;">
@@ -421,6 +536,11 @@ const flow = await previewer.preview(content, renderTo, stylesheets);</code></pr
                 const workerStatus = document.getElementById("workerStatus");
                 const timingResults = document.getElementById("timingResults");
                 const timingBody = document.getElementById("timingBody");
+                const totalPagesEl = document.getElementById("totalPages");
+                const renderTimeEl = document.getElementById("renderTime");
+                const modeEl = document.getElementById("mode");
+                const activeWorkersEl = document.getElementById("activeWorkers");
+                const progressPhases = document.getElementById("progressPhases");
 
                 let previewer = null;
                 let flow = null;
@@ -475,6 +595,32 @@ const flow = await previewer.preview(content, renderTo, stylesheets);</code></pr
                     }
                 }
 
+                function setPhase(phaseId, status, icon) {
+                    const phase = document.getElementById(phaseId);
+                    if (!phase) return;
+
+                    phase.className = "phase";
+                    if (status === "active") {
+                        phase.classList.add("active");
+                        phase.querySelector(".phase-status").textContent = "Processing...";
+                        phase.querySelector(".phase-icon").textContent = icon || "⚙️";
+                    } else if (status === "complete") {
+                        phase.classList.add("complete");
+                        phase.querySelector(".phase-status").textContent = "Done ✓";
+                        phase.querySelector(".phase-icon").textContent = icon || "✅";
+                    } else {
+                        phase.querySelector(".phase-status").textContent = "Waiting...";
+                        phase.querySelector(".phase-icon").textContent = "⏳";
+                    }
+                }
+
+                function resetPhases() {
+                    setPhase("phaseInit", "waiting");
+                    setPhase("phaseAnalyze", "waiting");
+                    setPhase("phaseLayout", "waiting");
+                    setPhase("phaseComplete", "waiting");
+                }
+
                 function renderDocument(useWorkers) {
                     if (previewer) {
                         previewer.destroy();
@@ -490,14 +636,12 @@ const flow = await previewer.preview(content, renderTo, stylesheets);</code></pr
                     statsDiv.style.display = "none";
                     infoBox.style.display = "none";
                     workerStatus.style.display = "none";
+                    progressPhases.style.display = "block";
+                    resetPhases();
 
                     const btn = useWorkers ? renderWorkerBtn : renderMainBtn;
                     btn.disabled = true;
                     btn.textContent = "Rendering...";
-
-                    infoBox.style.display = "block";
-                    infoTitle.textContent = useWorkers ? "Initializing workers..." : "Rendering on main thread...";
-                    infoText.textContent = "Please wait while the document is being processed.";
 
                     const options = {
                         viewMode: "single"
@@ -513,8 +657,11 @@ const flow = await previewer.preview(content, renderTo, stylesheets);</code></pr
                     previewer = new PaperView.Previewer(options);
 
                     if (useWorkers) {
+                        setPhase("phaseInit", "active", "🔧");
+
                         previewer.on("workersReady", (data) => {
-                            infoTitle.textContent = "Workers ready, rendering...";
+                            setPhase("phaseInit", "complete", "✅");
+                            setPhase("phaseAnalyze", "active", "🔍");
                             workerStatus.style.display = "flex";
                             updateWorkerStatus(previewer.getWorkerStats());
                         });
@@ -523,10 +670,29 @@ const flow = await previewer.preview(content, renderTo, stylesheets);</code></pr
                             const stats = previewer.getWorkerStats();
                             if (stats) {
                                 updateWorkerStatus(stats);
-                                document.getElementById("activeWorkers").textContent = stats.busyWorkers;
+                                if (activeWorkersEl) activeWorkersEl.textContent = stats.busyWorkers;
                             }
                         });
+
+                        previewer.on("workerLayoutComplete", (data) => {
+                            setPhase("phaseAnalyze", "complete", "✅");
+                            setPhase("phaseLayout", "active", "📄");
+                        });
+                    } else {
+                        setPhase("phaseInit", "complete", "✅");
+                        setPhase("phaseAnalyze", "complete", "✅");
+                        setPhase("phaseLayout", "active", "📄");
                     }
+
+                    previewer.on("page", () => {
+                        // Pages are being created
+                    });
+
+                    previewer.on("renderedPage", (page) => {
+                        if (useWorkers) {
+                            // Update progress during worker layout
+                        }
+                    });
 
                     const startTime = performance.now();
 
@@ -536,22 +702,25 @@ const flow = await previewer.preview(content, renderTo, stylesheets);</code></pr
                             const endTime = performance.now();
                             const duration = Math.round(endTime - startTime);
 
-                            statsDiv.style.display = "grid";
-                            document.getElementById("totalPages").textContent = flow.total;
-                            document.getElementById("renderTime").textContent = duration + "ms";
-                            document.getElementById("mode").textContent = useWorkers ? "Workers" : "Main";
+                            setPhase("phaseLayout", "complete", "✅");
+                            setPhase("phaseComplete", "complete", "🎉");
+
+                            if (statsDiv) statsDiv.style.display = "grid";
+                            if (totalPagesEl) totalPagesEl.textContent = flow.total;
+                            if (renderTimeEl) renderTimeEl.textContent = duration + "ms";
+                            if (modeEl) modeEl.textContent = useWorkers ? "Workers" : "Main";
 
                             if (useWorkers) {
                                 const stats = previewer.getWorkerStats();
                                 if (stats) {
-                                    document.getElementById("activeWorkers").textContent = stats.busyWorkers;
+                                    if (activeWorkersEl) activeWorkersEl.textContent = stats.busyWorkers;
                                     updateWorkerStatus(stats);
                                 }
                             }
 
-                            infoBox.style.display = "block";
-                            infoTitle.textContent = "Rendering complete!";
-                            infoText.textContent = `Rendered ${flow.total} pages in ${duration}ms using ${useWorkers ? "Web Workers" : "main thread"}.`;
+                            if (infoBox) infoBox.style.display = "block";
+                            if (infoTitle) infoTitle.textContent = "Rendering complete!";
+                            if (infoText) infoText.textContent = `Rendered ${flow.total} pages in ${duration}ms using ${useWorkers ? "Web Workers" : "main thread"}.`;
 
                             timings.push({
                                 mode: useWorkers ? "Workers" : "Main",
@@ -567,9 +736,10 @@ const flow = await previewer.preview(content, renderTo, stylesheets);</code></pr
                         })
                         .catch((error) => {
                             console.error("Error:", error);
-                            infoBox.style.display = "block";
-                            infoTitle.textContent = "Error";
-                            infoText.textContent = `Error: ${error.message}`;
+                            resetPhases();
+                            if (infoBox) infoBox.style.display = "block";
+                            if (infoTitle) infoTitle.textContent = "Error";
+                            if (infoText) infoText.textContent = `Error: ${error.message}`;
 
                             btn.disabled = false;
                             btn.textContent = useWorkers ? "Render (Workers)" : "Render (Main Thread)";

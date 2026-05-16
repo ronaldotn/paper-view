@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hyphens Example - PaperView</title>
+    <link rel="stylesheet" href="../dist/css/paper.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px 20px;
+            background: #16213e;
+            border-bottom: 1px solid #0f3460;
+            flex-wrap: wrap;
+        }
+
+        .toolbar h1 {
+            font-size: 18px;
+            color: #e94560;
+            margin-right: auto;
+        }
+
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toolbar label {
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .toolbar select, .toolbar button {
+            padding: 8px 12px;
+            border: 1px solid #0f3460;
+            border-radius: 6px;
+            background: #1a1a2e;
+            color: #eee;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .toolbar select:hover, .toolbar button:hover {
+            border-color: #e94560;
+        }
+
+        .toolbar button.primary {
+            background: #e94560;
+            border-color: #e94560;
+            color: white;
+        }
+
+        .toolbar button.primary:hover {
+            background: #c73e54;
+        }
+
+        .viewer-container {
+            flex: 1;
+            overflow: auto;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        #viewport {
+            background: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .info-box {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #16213e;
+            border: 1px solid #0f3460;
+            border-radius: 8px;
+            padding: 16px;
+            max-width: 320px;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #ccc;
+        }
+
+        .info-box h3 {
+            color: #e94560;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .info-box code {
+            background: #0f3460;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+            color: #4fc3f7;
+        }
+
+        .status {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .status.rendering {
+            background: #f39c12;
+            color: #000;
+        }
+
+        .status.done {
+            background: #27ae60;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="toolbar">
+            <h1>Hyphens Demo</h1>
+            <div class="toolbar-group">
+                <label for="hyphenMode">Hyphens Mode:</label>
+                <select id="hyphenMode">
+                    <option value="auto">auto</option>
+                    <option value="manual">manual</option>
+                    <option value="none">none</option>
+                </select>
+            </div>
+            <div class="toolbar-group">
+                <label for="lang">Language:</label>
+                <select id="lang">
+                    <option value="en">English</option>
+                    <option value="es">Spanish</option>
+                    <option value="fr">French</option>
+                    <option value="de">German</option>
+                    <option value="it">Italian</option>
+                    <option value="pt">Portuguese</option>
+                </select>
+            </div>
+            <div class="toolbar-group">
+                <label for="hyphenChar">Hyphen Char:</label>
+                <select id="hyphenChar">
+                    <option value="\u00AD">Soft hyphen (default)</option>
+                    <option value="-">Regular hyphen (-)</option>
+                    <option value="\u2010">Hyphen bullet (‐)</option>
+                    <option value="\u2011">Non-breaking hyphen (‑)</option>
+                </select>
+            </div>
+            <button id="renderBtn" class="primary">Render</button>
+            <span id="status" class="status"></span>
+        </div>
+
+        <div class="viewer-container">
+            <div id="viewport"></div>
+        </div>
+    </div>
+
+    <div class="info-box">
+        <h3>CSS Hyphens Support</h3>
+        <p><code>hyphens: auto</code> - Automatic hyphenation with dictionaries</p>
+        <p><code>hyphens: manual</code> - Only at &amp;shy; or \u00AD</p>
+        <p><code>hyphens: none</code> - No hyphenation</p>
+        <p style="margin-top: 8px;"><code>hyphenate-character</code> - Custom hyphen char</p>
+        <p><code>hyphenate-limit-chars</code> - Min chars before/after</p>
+        <p><code>hyphenate-limit-lines</code> - Max consecutive hyphenated lines</p>
+        <p><code>hyphenate-limit-zone</code> - Unsqueezed space threshold</p>
+    </div>
+
+    <div id="content" style="display: none;">
+        <article>
+            <h1>Understanding Hyphenation in Paged Media</h1>
+
+            <p>Hyphenation is an essential typographic feature that improves the appearance and readability of justified text. When text is justified, words are spaced unevenly to fill the line width. Hyphenation allows longer words to be broken at appropriate points, reducing the amount of spacing adjustment needed and creating a more uniform text block.</p>
+
+            <h2>The Importance of Proper Hyphenation</h2>
+
+            <p>Proper hyphenation is particularly important in narrow columns, where long words would otherwise create significant gaps between words. The CSS <code>hyphens</code> property provides three modes of operation: automatic, manual, and none. Each serves different purposes depending on the content and design requirements.</p>
+
+            <p>Automatic hyphenation uses language-specific dictionaries to determine the correct points at which words can be broken. These dictionaries contain patterns that identify valid syllable boundaries, ensuring that words are hyphenated according to the rules of each language. This is especially important for languages with complex hyphenation rules, such as German, which frequently compounds words, or French, which has specific rules about where breaks can occur.</p>
+
+            <h2>Implementation Details</h2>
+
+            <p>The hyphenation engine implements the Knuth-Liang algorithm, which uses pattern matching to identify valid hyphenation points. This algorithm was developed by Donald Knuth and later refined by Frank Liang. It works by matching substrings of words against a set of patterns, each of which indicates potential hyphenation points with numeric values.</p>
+
+            <p>For example, the pattern "ti5tle" indicates that "title" can be hyphenated between "ti" and "tle" with a priority level of 5 (the highest). When multiple patterns match overlapping portions of a word, the highest priority value at each position determines whether a hyphenation point is valid.</p>
+
+            <h2>Language Support</h2>
+
+            <p>The hyphenation system supports multiple languages including English, Spanish, French, German, Italian, and Portuguese. Each language has its own set of patterns and exception words. Exception words are handled separately to ensure correct hyphenation for words that don't follow standard patterns.</p>
+
+            <p>Common exception words include "extraordinary", "international", "communication", "environment", "development", "government", "responsibility", "characteristic", "contemporary", "revolutionary", "representative", "approximately", "unfortunately", "nevertheless", "accommodation", "achievement", "acknowledge", "acquisition", "administration", "advertisement", "agricultural", "anniversary", "anticipate", "appreciation", "architecture", "atmosphere", "authorization", "autobiography", "biodiversity", "biotechnology", "bureaucracy", "calculation", "camaraderie", "cartography", "catastrophe", "categorize", "celebration", "certification", "championship", "characterize", "chronological", "circumstance", "civilization", "collaboration", "commemorate", "commissioner", "commitment", "commodity", "communicate", "companion", "comparison", "compatibility", "compensation", "competition", "comprehensive", "compromise", "computation", "concentration", "conceptual", "confederation", "configuration", "congratulate", "conscience", "consciousness", "consequence", "considerable", "consistency", "constitution", "construction", "consultation", "contemporary", "controversy", "convenience", "conversation", "cooperation", "coordination", "correspondence", "correspondent", "corruption", "councilor", "courageous", "creativity", "crystallize", "curriculum", "decoration", "democratic", "demonstrate", "department", "depreciation", "description", "desirable", "determination", "difference", "dimension", "diplomatic", "disadvantage", "disappear", "disappoint", "disaster", "discipline", "discover", "discrimination", "discussion", "distribution", "diversity", "documentary", "domination", "ecological", "economic", "education", "effectiveness", "elaborate", "electricity", "eliminate", "embarrass", "embarrassment", "emotional", "emphasis", "employee", "employment", "encyclopedia", "endeavor", "endorsement", "enforcement", "engineering", "entertainment", "enthusiasm", "enthusiastic", "entrepreneur", "environmental", "epidemiology", "equilibrium", "equipment", "establishment", "evaluation", "evolution", "exaggerate", "examination", "exceptional", "excitement", "exclamation", "exhibition", "existence", "expectation", "expedition", "experiment", "explanation", "exploitation", "exploration", "explosion", "expression", "extraordinary", "facilitate", "familiarity", "fascinating", "fashionable", "favorable", "feasibility", "federation", "fertilizer", "flexibility", "flourishing", "forbidden", "forecast", "foreseeable", "formation", "formidable", "formulation", "fortunately", "friendship", "frustration", "fundamental", "functionality", "generation", "geographical", "governmental", "graduation", "guarantee", "guideline", "happiness", "hierarchical", "historical", "hospitality", "humanitarian", "humorous", "hydroelectric", "identification", "ideological", "illustration", "imagination", "immediate", "immigration", "implementation", "importance", "impossible", "impression", "improvement", "inadequate", "inappropriate", "incredible", "independence", "indication", "individual", "industrial", "inevitable", "influence", "information", "infrastructure", "ingredient", "inhabitant", "inheritance", "initiative", "innovation", "institution", "instruction", "instrument", "insufficient", "insurance", "integration", "intelligence", "intelligent", "intentional", "interaction", "interference", "intermediate", "international", "interpretation", "intervention", "introduction", "investigation", "investment", "invisible", "invitation", "involvement", "irregular", "irrelevant", "irresponsible", "judgment", "jurisdiction", "knowledgeable", "laboratory", "landscape", "legislation", "legitimate", "liberation", "literature", "loneliness", "magnificent", "maintenance", "management", "manufacture", "mathematics", "measurement", "mechanism", "memorable", "memorandum", "metamorphosis", "metropolitan", "microscopic", "millennium", "miniature", "minimization", "ministry", "miscellaneous", "mischievous", "misunderstand", "monitoring", "monumental", "motivation", "mountainous", "multicultural", "municipality", "musician", "mysterious", "mythological", "narrative", "naturalist", "navigation", "negotiation", "neighborhood", "nevertheless", "nonetheless", "normalization", "notable", "noteworthy", "notion", "notorious", "novelty", "numerical", "nutrition", "objection", "obligation", "observation", "obstacle", "occasion", "occupation", "occurrence", "official", "omission", "operation", "opportunity", "opposition", "optimistic", "organization", "orientation", "original", "ornamental", "otherwise", "outstanding", "overcome", "overestimate", "overwhelming", "parliament", "particular", "participation", "partnership", "passionate", "patronage", "perception", "performance", "permanent", "permission", "perseverance", "perspective", "persuasion", "pertinent", "phenomenon", "philosophical", "photography", "physiological", "pilgrimage", "plantation", "platform", "pleasurable", "politician", "population", "portable", "portrait", "position", "possession", "possibility", "practically", "pragmatic", "precaution", "preceding", "precision", "predictable", "predominant", "preference", "prejudice", "preliminary", "preparation", "prescription", "presentation", "preservation", "presidential", "prestigious", "presumably", "pretension", "prevalence", "prevention", "primarily", "principle", "privilege", "probability", "procedure", "proceeding", "processing", "production", "professional", "professor", "proficiency", "profound", "progression", "prohibition", "projection", "prominence", "pronunciation", "proposition", "prospective", "prosperity", "protection", "psychological", "publication", "punctuation", "punishment", "purchasing", "qualification", "questionnaire", "radiation", "realistic", "realization", "reasonable", "rebellion", "reception", "recognition", "recommendation", "reconciliation", "reconstruction", "recollection", "recreation", "reduction", "reference", "reflection", "reformation", "regulation", "rehabilitation", "relationship", "relaxation", "reluctant", "remarkable", "remembrance", "reminiscence", "rendezvous", "renovation", "reorganization", "representation", "reproduction", "reputation", "resemblance", "reservation", "residence", "resignation", "resistance", "resolution", "respective", "responsibility", "restaurant", "restitution", "restoration", "restraint", "restriction", "retirement", "revelation", "revolution", "righteous", "romantic", "rudimentary", "sacrifice", "satisfaction", "satisfactory", "scapegoat", "scholarship", "scientific", "screening", "secretary", "sedimentary", "sensitivity", "separation", "settlement", "significance", "similarity", "simplicity", "simultaneous", "situation", "sophisticated", "souvenir", "sovereignty", "specialist", "specification", "spectacular", "speculation", "spontaneous", "stability", "statement", "statistical", "stereotype", "stimulation", "strategy", "strength", "strengthen", "structure", "subconscious", "subordinate", "subscription", "subsequent", "substantial", "substitute", "subterranean", "sufficient", "superficial", "superintendent", "supplementary", "suppression", "supreme", "surrender", "surveillance", "suspicion", "sustainable", "syllable", "symmetrical", "symposium", "synchronize", "synthesis", "systematic", "taxation", "technician", "technological", "temperament", "temperature", "temporary", "temptation", "tendency", "terminology", "terrific", "territory", "testimony", "thankful", "theater", "theological", "theoretical", "therapeutic", "threshold", "throughout", "tolerance", "topography", "totalitarian", "traditional", "trajectory", "transaction", "transcend", "transformation", "transition", "translation", "transmission", "transparency", "transportation", "treasure", "tremendous", "tribulation", "triumphant", "tropical", "turbulent", "typewriter", "typical", "ubiquitous", "ultimately", "unanimous", "unbelievable", "uncertainty", "uncomfortable", "unconscious", "underestimate", "undertake", "underwear", "unemployment", "unexpected", "unfortunate", "unification", "unilateral", "unimaginable", "university", "unpleasant", "unprecedented", "unpredictable", "unreasonable", "unrecognizable", "unsuccessful", "utilization", "vacation", "validation", "valuable", "vegetation", "ventilation", "verification", "versatile", "veterinarian", "vicinity", "victorious", "vigorous", "villain", "violation", "virtually", "visibility", "vocabulary", "vocation", "voluntary", "vulnerable", "warrant", "wavelength", "weakness", "wealthy", "whereabouts", "whereas", "wherever", "whisper", "widespread", "willingness", "wonderful", "workshop", "worldwide", "worsening", "worthwhile", "yesterday" and many more.</p>
+
+            <h2>Configuration Options</h2>
+
+            <p>The hyphenation system provides several configuration options to fine-tune the behavior:</p>
+
+            <ul>
+                <li><strong>hyphenate-character</strong>: Specifies the character to use at the end of a hyphenated line. The default is the soft hyphen character (U+00AD).</li>
+                <li><strong>hyphenate-limit-chars</strong>: Sets the minimum number of characters that must appear before and after a hyphenation point, as well as the minimum total word length.</li>
+                <li><strong>hyphenate-limit-lines</strong>: Limits the number of consecutive lines that can end with a hyphenated word.</li>
+                <li><strong>hyphenate-limit-zone</strong>: Specifies the maximum amount of unsqueezed space that can appear at the end of a line before hyphenation is triggered.</li>
+            </ul>
+
+            <h2>Performance Considerations</h2>
+
+            <p>The hyphenation engine uses caching to avoid redundant calculations. Once a word has been hyphenated, the result is stored and reused for subsequent occurrences. This significantly improves performance when processing large documents with repeated vocabulary.</p>
+
+            <p>Additionally, the engine falls back to the browser's native <code>Intl.Segmenter</code> API when available, providing even better performance on modern browsers while maintaining compatibility with older environments through the pattern-based algorithm.</p>
+
+            <h2>Conclusion</h2>
+
+            <p>Proper hyphenation is essential for high-quality typesetting in paged media. The combination of pattern-based algorithms, exception dictionaries, and browser API fallbacks ensures that text is hyphenated correctly across multiple languages and environments. By providing comprehensive CSS property support, PaperView enables precise control over hyphenation behavior to achieve the best typographic results.</p>
+        </article>
+    </div>
+
+    <script type="module">
+        import PaperView from '../dist/paperview.esm.js';
+
+        const viewport = document.getElementById('viewport');
+        const content = document.getElementById('content');
+        const renderBtn = document.getElementById('renderBtn');
+        const statusEl = document.getElementById('status');
+        const hyphenModeSelect = document.getElementById('hyphenMode');
+        const langSelect = document.getElementById('lang');
+        const hyphenCharSelect = document.getElementById('hyphenChar');
+
+        let paperView = null;
+
+        function getHyphenChar() {
+            const val = hyphenCharSelect.value;
+            if (val.startsWith('\\u')) {
+                return String.fromCodePoint(parseInt(val.substring(2), 16));
+            }
+            return val;
+        }
+
+        async function render() {
+            if (paperView) {
+                paperView.destroy();
+                viewport.innerHTML = '';
+            }
+
+            const mode = hyphenModeSelect.value;
+            const lang = langSelect.value;
+            const hyphenChar = getHyphenChar();
+
+            const clone = content.cloneNode(true);
+            clone.style.display = 'block';
+            clone.setAttribute('lang', lang);
+
+            const style = document.createElement('style');
+            style.textContent = `
+                * { hyphens: ${mode}; }
+                body {
+                    font-family: Georgia, 'Times New Roman', serif;
+                    font-size: 11pt;
+                    line-height: 1.5;
+                    color: #333;
+                    max-width: 100%;
+                }
+                h1 { font-size: 18pt; margin-bottom: 12pt; }
+                h2 { font-size: 14pt; margin-top: 16pt; margin-bottom: 8pt; }
+                p { margin-bottom: 8pt; text-align: justify; }
+                ul { margin-left: 20pt; margin-bottom: 8pt; }
+                li { margin-bottom: 4pt; }
+                code {
+                    background: #f4f4f4;
+                    padding: 2px 4px;
+                    border-radius: 3px;
+                    font-family: monospace;
+                    font-size: 10pt;
+                }
+            `;
+            clone.querySelector('article').prepend(style);
+
+            statusEl.textContent = 'Rendering...';
+            statusEl.className = 'status rendering';
+            renderBtn.disabled = true;
+
+            paperView = new PaperView();
+
+            paperView.render(clone.innerHTML, {
+                size: 'letter',
+                margin: '1in'
+            }).then(() => {
+                statusEl.textContent = 'Done';
+                statusEl.className = 'status done';
+                renderBtn.disabled = false;
+            }).catch(err => {
+                statusEl.textContent = 'Error: ' + err.message;
+                statusEl.className = 'status';
+                renderBtn.disabled = false;
+            });
+        }
+
+        renderBtn.addEventListener('click', render);
+
+        render();
+    </script>
+</body>
+</html>

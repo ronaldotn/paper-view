@@ -267,6 +267,17 @@ class Polisher {
 			score += 3; // Named pages are more specific than generic @page
 		}
 
+		// :has() selectors are highly specific (content-based matching)
+		if (selector.includes(':has(')) score += 15;
+		
+		// :is() selectors take the specificity of their most specific argument
+		if (selector.includes(':is(')) {
+			score += 8; // Base score for :is()
+			// Additional points based on what's inside :is()
+			if (selector.includes(':first')) score += 2;
+			if (selector.includes(':blank')) score += 2;
+		}
+
 		return score;
 	}
 }

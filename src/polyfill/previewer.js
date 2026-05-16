@@ -4,6 +4,7 @@ import Chunker from "../chunker/chunker";
 import Polisher from "../polisher/polisher";
 import PDFExporter from "../export/index.js";
 import LazyRenderer from "./lazy-renderer.js";
+import { SpreadViewer } from "./spread-viewer.ts";
 
 import { registerHandlers, initializeHandlers } from "../utils/handlers";
 
@@ -53,6 +54,12 @@ class Previewer {
 		// Lazy Renderer
 		this.lazyRenderer = null;
 
+		// Spread Viewer
+		this.spreadViewer = null;
+		const { spreadViewer, spreadViewerOptions } = options;
+		this._spreadViewerEnabled = spreadViewer === true;
+		this._spreadViewerOptions = spreadViewerOptions || {};
+
 		// Rendered state
 		this.rendered = false;
 
@@ -88,6 +95,18 @@ class Previewer {
 
 		this.chunker.on("workerTaskError", (data) => {
 			this.emit("workerTaskError", data);
+		});
+
+		this.chunker.on("workerLayoutComplete", (data) => {
+			this.emit("workerLayoutComplete", data);
+		});
+
+		this.chunker.on("oversetDetected", (data) => {
+			this.emit("oversetDetected", data);
+		});
+
+		this.chunker.on("oversetMaxIterations", (data) => {
+			this.emit("oversetMaxIterations", data);
 		});
 	}
 
@@ -197,7 +216,9 @@ class Previewer {
 		if (typeof contentFrom === "string") {
 			content = contentFrom;
 		} else if (contentFrom && typeof contentFrom === "object") {
-			contentFrom.style.display = "none";
+			if (contentFrom.style) {
+				contentFrom.style.display = "none";
+			}
 			content = contentFrom.innerHTML;
 		}
 
@@ -231,6 +252,11 @@ class Previewer {
 
 		this.rendered = true;
 
+		// Initialize spread viewer if enabled
+		if (this._spreadViewerEnabled && renderTo) {
+			await this.initSpreadViewer(renderTo);
+		}
+
 		this.emit("rendered", flow);
 
 		return flow;
@@ -241,7 +267,9 @@ class Previewer {
 		if (typeof contentFrom === "string") {
 			content = contentFrom;
 		} else if (contentFrom && typeof contentFrom === "object") {
-			contentFrom.style.display = "none";
+			if (contentFrom.style) {
+				contentFrom.style.display = "none";
+			}
 			content = contentFrom.innerHTML;
 		}
 
@@ -293,6 +321,11 @@ class Previewer {
 
 		this.rendered = true;
 
+		// Initialize spread viewer if enabled
+		if (this._spreadViewerEnabled && renderTo) {
+			await this.initSpreadViewer(renderTo);
+		}
+
 		this.emit("rendered", result);
 
 		return result;
@@ -322,6 +355,10 @@ class Previewer {
 		return this.chunker.getWorkerStats();
 	}
 
+	getOversetInfo() {
+		return this.chunker.getOversetInfo();
+	}
+
 	scrollToPage(index) {
 		if (this.lazyRenderer) {
 			this.lazyRenderer.scrollToPage(index);
@@ -334,7 +371,51 @@ class Previewer {
 		}
 	}
 
+	async initSpreadViewer(renderTo) {
+		if (this.spreadViewer) {
+			this.spreadViewer.destroy();
+		}
+
+		this.spreadViewer = new SpreadViewer({
+			container: renderTo,
+			spreadMode: "book",
+			...this._spreadViewerOptions
+		});
+
+		await this.spreadViewer.initialize();
+
+		this.spreadViewer.on("spreadChange", (data) => {
+			this.emit("spreadChange", data);
+		});
+
+		this.spreadViewer.on("zoomChange", (data) => {
+			this.emit("zoomChange", data);
+		});
+
+		this.spreadViewer.on("modeChange", (data) => {
+			this.emit("spreadModeChange", data);
+		});
+	}
+
+	getSpreadViewer() {
+		return this.spreadViewer;
+	}
+
+	isSpreadViewerEnabled() {
+		return this._spreadViewerEnabled && this.spreadViewer !== null;
+	}
+
+	setSpreadViewerMode(mode) {
+		if (this.spreadViewer) {
+			this.spreadViewer.setMode(mode);
+		}
+	}
+
 	destroy() {
+		if (this.spreadViewer) {
+			this.spreadViewer.destroy();
+			this.spreadViewer = null;
+		}
 		if (this.lazyRenderer) {
 			this.lazyRenderer.destroy();
 			this.lazyRenderer = null;

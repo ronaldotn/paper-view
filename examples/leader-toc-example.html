@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>PaperView - Leader() TOC Example</title>
+	<style>
+		@page {
+			size: A4;
+			margin: 2.5cm 2cm;
+
+			@top-center {
+				content: "Table of Contents Demo";
+				font-size: 9pt;
+				color: #666;
+				font-style: italic;
+			}
+
+			@bottom-center {
+				content: counter(page);
+				font-size: 10pt;
+			}
+		}
+
+		body {
+			font-family: "Georgia", "Times New Roman", serif;
+			line-height: 1.6;
+			color: #1a1a1a;
+			max-width: 100%;
+		}
+
+		h1 {
+			font-size: 28pt;
+			margin-bottom: 8pt;
+			color: #111;
+			border-bottom: 3px solid #333;
+			padding-bottom: 12pt;
+		}
+
+		h2 {
+			font-size: 18pt;
+			margin-top: 24pt;
+			margin-bottom: 12pt;
+			color: #2c3e50;
+			border-bottom: 1px solid #ddd;
+			padding-bottom: 6pt;
+		}
+
+		h3 {
+			font-size: 14pt;
+			margin-top: 18pt;
+			margin-bottom: 8pt;
+			color: #34495e;
+		}
+
+		p {
+			margin-bottom: 12pt;
+			text-align: justify;
+		}
+
+		/* Table of Contents Styles */
+		.toc {
+			margin-bottom: 36pt;
+		}
+
+		.toc h2 {
+			font-size: 20pt;
+			color: #111;
+			border-bottom: 2px solid #333;
+			margin-bottom: 18pt;
+		}
+
+		.toc ul {
+			list-style: none;
+			padding: 0;
+			margin: 0;
+		}
+
+		.toc li {
+			margin-bottom: 6pt;
+		}
+
+		.toc-entry {
+			font-size: 11pt;
+			line-height: 1.5;
+		}
+
+		.toc-entry.level-1 {
+			font-weight: bold;
+			font-size: 12pt;
+			margin-top: 10pt;
+		}
+
+		.toc-entry.level-2 {
+			padding-left: 1.5em;
+		}
+
+		.toc-entry.level-3 {
+			padding-left: 3em;
+			font-size: 10pt;
+			color: #555;
+		}
+
+		.toc-entry a {
+			text-decoration: none;
+			color: inherit;
+		}
+
+		.toc-entry a:hover {
+			color: #0066cc;
+		}
+
+		/* Leader styles for TOC */
+		.toc-entry::after {
+			content: leader(dotted) target-counter(attr(href url), page);
+		}
+
+		/* Index styles */
+		.index-entry::after {
+			content: leader(dotted) target-counter(attr(href url), page);
+		}
+
+		/* Alternative leader types */
+		.toc-solid::after {
+			content: leader(solid) target-counter(attr(href url), page);
+		}
+
+		.toc-space::after {
+			content: leader(space) target-counter(attr(href url), page);
+		}
+
+		.toc-dots::after {
+			content: leader(dots) target-counter(attr(href url), page);
+		}
+
+		.toc-custom::after {
+			content: leader("-") target-counter(attr(href url), page);
+		}
+
+		/* Chapter content styles */
+		.chapter {
+			page-break-before: always;
+		}
+
+		.chapter-header {
+			font-size: 22pt;
+			color: #1a1a1a;
+			margin-bottom: 18pt;
+			padding-bottom: 12pt;
+			border-bottom: 2px solid #333;
+		}
+
+		.section-header {
+			font-size: 16pt;
+			color: #2c3e50;
+			margin-top: 24pt;
+			margin-bottom: 12pt;
+		}
+
+		.subsection-header {
+			font-size: 13pt;
+			color: #34495e;
+			margin-top: 18pt;
+			margin-bottom: 8pt;
+		}
+
+		/* Leader type comparison table */
+		.leader-comparison {
+			margin: 24pt 0;
+			padding: 18pt;
+			background: #f8f9fa;
+			border: 1px solid #dee2e6;
+			border-radius: 4px;
+		}
+
+		.leader-comparison h3 {
+			margin-top: 0;
+			font-size: 14pt;
+			color: #333;
+		}
+
+		.leader-example {
+			margin-bottom: 12pt;
+			padding: 8pt 0;
+			border-bottom: 1px dashed #ddd;
+		}
+
+		.leader-example:last-child {
+			border-bottom: none;
+			margin-bottom: 0;
+		}
+
+		.leader-label {
+			font-size: 9pt;
+			color: #666;
+			font-style: italic;
+			margin-bottom: 4pt;
+		}
+
+		.note {
+			padding: 12pt;
+			background: #e7f3ff;
+			border-left: 4px solid #2196F3;
+			margin: 18pt 0;
+			font-size: 10pt;
+		}
+
+		.note strong {
+			color: #1976D2;
+		}
+	</style>
+</head>
+<body>
+	<div class="toc">
+		<h2>Table of Contents</h2>
+		<ul>
+			<li class="toc-entry level-1">
+				<a href="#chapter-1">1. Introduction to Paged Media</a>
+			</li>
+			<li class="toc-entry level-2">
+				<a href="#section-1-1">1.1 What is Paged Media?</a>
+			</li>
+			<li class="toc-entry level-2">
+				<a href="#section-1-2">1.2 CSS Paged Media Module</a>
+			</li>
+			<li class="toc-entry level-2">
+				<a href="#section-1-3">1.3 Page Boxes and Margins</a>
+			</li>
+			<li class="toc-entry level-1">
+				<a href="#chapter-2">2. Generated Content</a>
+			</li>
+			<li class="toc-entry level-2">
+				<a href="#section-2-1">2.1 The content Property</a>
+			</li>
+			<li class="toc-entry level-2">
+				<a href="#section-2-2">2.2 The leader() Function</a>
+			</li>
+			<li class="toc-entry level-2">
+				<a href="#section-2-3">2.3 target-counter() Function</a>
+			</li>
+			<li class="toc-entry level-2">
+				<a href="#section-2-4">2.4 target-text() Function</a>
+			</li>
+			<li class="toc-entry level-1">
+				<a href="#chapter-3">3. Page Floats</a>
+			</li>
+			<li class="toc-entry level-2">
+				<a href="#section-3-1">3.1 Float: Top and Bottom</a>
+			</li>
+			<li class="toc-entry level-2">
+				<a href="#section-3-2">3.2 Float: Page</a>
+			</li>
+			<li class="toc-entry level-2">
+				<a href="#section-3-3">3.3 Float-Defer and Clear</a>
+			</li>
+			<li class="toc-entry level-1">
+				<a href="#chapter-4">4. Footnotes</a>
+			</li>
+			<li class="toc-entry level-2">
+				<a href="#section-4-1">4.1 Float: Footnote</a>
+			</li>
+			<li class="toc-entry level-2">
+				<a href="#section-4-2">4.2 Footnote Display and Policy</a>
+			</li>
+			<li class="toc-entry level-1">
+				<a href="#chapter-5">5. Hyphenation</a>
+			</li>
+			<li class="toc-entry level-2">
+				<a href="#section-5-1">5.1 Hyphens Property</a>
+			</li>
+			<li class="toc-entry level-2">
+				<a href="#section-5-2">5.2 Hyphenate-Limit-Chars</a>
+			</li>
+			<li class="toc-entry level-1">
+				<a href="#chapter-6">6. Advanced Layout Techniques</a>
+			</li>
+			<li class="toc-entry level-2">
+				<a href="#section-6-1">6.1 Running Headers and Footers</a>
+			</li>
+			<li class="toc-entry level-2">
+				<a href="#section-6-2">6.2 String Sets</a>
+			</li>
+			<li class="toc-entry level-2">
+				<a href="#section-6-3">6.3 Named Pages</a>
+			</li>
+			<li class="toc-entry level-1">
+				<a href="#chapter-7">7. Best Practices and Tips</a>
+			</li>
+			<li class="toc-entry level-2">
+				<a href="#section-7-1">7.1 Performance Optimization</a>
+			</li>
+			<li class="toc-entry level-2">
+				<a href="#section-7-2">7.2 Cross-Browser Compatibility</a>
+			</li>
+			<li class="toc-entry level-2">
+				<a href="#section-7-3">7.3 Debugging Techniques</a>
+			</li>
+			<li class="toc-entry level-1">
+				<a href="#chapter-8">8. Conclusion</a>
+			</li>
+		</ul>
+	</div>
+
+	<div class="chapter">
+		<h2 class="chapter-header" id="chapter-1">1. Introduction to Paged Media</h2>
+
+		<p>Paged media refers to content that is divided into discrete pages, as opposed to continuous scrolling media. This includes printed documents, PDFs, and other paginated formats. The CSS Paged Media Module provides powerful tools for controlling page layout, margins, and content generation.</p>
+
+		<h3 class="section-header" id="section-1-1">1.1 What is Paged Media?</h3>
+
+		<p>Paged media is fundamentally different from continuous media. In paged media, content is broken into pages, each with its own dimensions, margins, and potentially different layouts. This requires special CSS properties and rules that don't apply to screen media.</p>
+
+		<p>The concept of paged media has been part of CSS since CSS2, but the modern CSS Paged Media Module Level 3 extends these capabilities significantly, adding support for page floats, footnotes, leaders, and more sophisticated page layout controls.</p>
+
+		<h3 class="section-header" id="section-1-2">1.2 CSS Paged Media Module</h3>
+
+		<p>The CSS Paged Media Module defines several key concepts:</p>
+
+		<p><strong>@page rule</strong> - Defines the page box, including size, margins, and margin boxes for headers and footers.</p>
+
+		<p><strong>Page selectors</strong> - Allow different styles for first, left, right, or named pages.</p>
+
+		<p><strong>Page breaks</strong> - Control where content breaks from one page to the next using break-before, break-after, and break-inside properties.</p>
+
+		<h3 class="section-header" id="section-1-3">1.3 Page Boxes and Margins</h3>
+
+		<p>Each page in paged media consists of a page box containing a page area and margin boxes. The page area holds the document content, while the 16 margin boxes (four corners and three on each side) can contain generated content like page numbers, headers, and running titles.</p>
+	</div>
+
+	<div class="chapter">
+		<h2 class="chapter-header" id="chapter-2">2. Generated Content</h2>
+
+		<p>Generated content is content that is not present in the source document but is created by CSS. This is essential for paged media, where you need to add page numbers, running headers, table of contents entries, and other elements that depend on the document structure.</p>
+
+		<h3 class="section-header" id="section-2-1">2.1 The content Property</h3>
+
+		<p>The <code>content</code> property is used with pseudo-elements (<code>::before</code> and <code>::after</code>) to insert generated content. In paged media, it supports special functions like <code>target-counter()</code>, <code>target-text()</code>, and <code>leader()</code>.</p>
+
+		<h3 class="section-header" id="section-2-2">2.2 The leader() Function</h3>
+
+		<p>The <code>leader()</code> function creates a leader line - a repeating pattern that fills the space between two elements. This is most commonly used in tables of contents to create dotted lines between chapter titles and page numbers.</p>
+
+		<div class="note">
+			<strong>Note:</strong> This entire page demonstrates the <code>leader()</code> function in action. The Table of Contents on the first page uses <code>leader(dotted)</code> to create the dotted lines between titles and page numbers.
+		</div>
+
+		<p>The function accepts several values:</p>
+
+		<p><code>leader(dotted)</code> - Creates a dotted leader using ". " (dot followed by space). This is the most common choice for tables of contents.</p>
+
+		<p><code>leader(solid)</code> - Creates a solid line leader, useful for a more formal appearance.</p>
+
+		<p><code>leader(space)</code> - Creates a leader with wider spacing between dots.</p>
+
+		<p><code>leader(dots)</code> - Creates a leader using bullet characters.</p>
+
+		<p><code>leader("char")</code> - Creates a leader with a custom character, such as <code>leader("-")</code> or <code>leader("·")</code>.</p>
+
+		<h3 class="section-header" id="section-2-3">2.3 target-counter() Function</h3>
+
+		<p>The <code>target-counter()</code> function retrieves the value of a counter at the element referenced by a URL. This is essential for creating tables of contents, where you need to display the page number of each chapter.</p>
+
+		<p>Example usage in a TOC entry:</p>
+
+		<p><code>.toc-entry::after { content: leader(dotted) target-counter(attr(href url), page); }</code></p>
+
+		<h3 class="section-header" id="section-2-4">2.4 target-text() Function</h3>
+
+		<p>The <code>target-text()</code> function retrieves the text content of the element referenced by a URL. This can be used to create cross-references that automatically update when the document changes.</p>
+	</div>
+
+	<div class="chapter">
+		<h2 class="chapter-header" id="chapter-3">3. Page Floats</h2>
+
+		<p>Page floats allow figures, tables, and other block elements to be positioned at specific areas of a page, such as the top, bottom, or occupying the entire page. This provides much more control than traditional CSS floats.</p>
+
+		<h3 class="section-header" id="section-3-1">3.1 Float: Top and Bottom</h3>
+
+		<p>Elements with <code>float: top</code> are positioned at the top of the page, before the main content flow. Elements with <code>float: bottom</code> are positioned at the bottom. These are ideal for figures and tables that should not interrupt the reading flow.</p>
+
+		<h3 class="section-header" id="section-3-2">3.2 Float: Page</h3>
+
+		<p>Elements with <code>float: page</code> occupy the entire page, centered and prominent. This is perfect for full-page figures, charts, or important visual content that needs maximum impact.</p>
+
+		<h3 class="section-header" id="section-3-3">3.3 Float-Defer and Clear</h3>
+
+		<p>The <code>float-defer</code> property allows you to defer the placement of a float by a specified number of pages. The <code>clear</code> property with values like <code>page-top</code> ensures that floats start on a new page after clearing previous floats.</p>
+	</div>
+
+	<div class="chapter">
+		<h2 class="chapter-header" id="chapter-4">4. Footnotes</h2>
+
+		<p>Footnotes are annotations that appear at the bottom of a page, referenced by a superscript number in the main text. The CSS Paged Media Module provides comprehensive support for creating and styling footnotes.</p>
+
+		<h3 class="section-header" id="section-4-1">4.1 Float: Footnote</h3>
+
+		<p>Elements with <code>float: footnote</code> are extracted from the text flow and placed in a footnote area at the bottom of the page. A footnote call (superscript number) is inserted at the original position.</p>
+
+		<h3 class="section-header" id="section-4-2">4.2 Footnote Display and Policy</h3>
+
+		<p>The <code>footnote-display</code> property controls how the footnote appears (block, inline, or compact). The <code>footnote-policy</code> property determines how footnotes are handled when they don't fit on the current page.</p>
+	</div>
+
+	<div class="chapter">
+		<h2 class="chapter-header" id="chapter-5">5. Hyphenation</h2>
+
+		<p>Hyphenation controls how words are broken at line endings. Proper hyphenation is essential for professional typesetting, especially in narrow columns or justified text.</p>
+
+		<h3 class="section-header" id="section-5-1">5.1 Hyphens Property</h3>
+
+		<p>The <code>hyphens</code> property accepts three values: <code>auto</code> (automatic hyphenation based on language), <code>manual</code> (only at explicit hyphenation points), and <code>none</code> (no hyphenation).</p>
+
+		<h3 class="section-header" id="section-5-2">5.2 Hyphenate-Limit-Chars</h3>
+
+		<p>The <code>hyphenate-limit-chars</code> property controls the minimum number of characters before and after a hyphenation point, as well as the minimum total word length for hyphenation.</p>
+	</div>
+
+	<div class="chapter">
+		<h2 class="chapter-header" id="chapter-6">6. Advanced Layout Techniques</h2>
+
+		<p>Beyond the basic features, CSS Paged Media offers advanced techniques for creating sophisticated document layouts.</p>
+
+		<h3 class="section-header" id="section-6-1">6.1 Running Headers and Footers</h3>
+
+		<p>Running headers and footers use the <code>position: running()</code> property to define content that is then displayed in page margin boxes using <code>element()</code>. This allows chapter titles, author names, and other information to appear automatically in headers.</p>
+
+		<h3 class="section-header" id="section-6-2">6.2 String Sets</h3>
+
+		<p>String sets allow you to capture text from the document and use it in generated content. This is useful for creating running headers that show the current chapter or section title.</p>
+
+		<h3 class="section-header" id="section-6-3">6.3 Named Pages</h3>
+
+		<p>Named pages allow you to assign specific page types to elements, enabling different layouts for different sections of a document. For example, a title page might have no headers or page numbers, while content pages have full headers.</p>
+	</div>
+
+	<div class="chapter">
+		<h2 class="chapter-header" id="chapter-7">7. Best Practices and Tips</h2>
+
+		<p>Creating professional paged media documents requires attention to detail and understanding of both CSS and typography principles.</p>
+
+		<h3 class="section-header" id="section-7-1">7.1 Performance Optimization</h3>
+
+		<p>Large documents can be slow to paginate. Use techniques like lazy rendering, pagination caching, and progressive loading to improve performance. Avoid overly complex CSS selectors and minimize the use of expensive properties.</p>
+
+		<h3 class="section-header" id="section-7-2">7.2 Cross-Browser Compatibility</h3>
+
+		<p>Not all browsers support CSS Paged Media features equally. Use a polyfill like PaperView (paged.js) to ensure consistent rendering across browsers. Test your documents in multiple environments.</p>
+
+		<h3 class="section-header" id="section-7-3">7.3 Debugging Techniques</h3>
+
+		<p>Use browser developer tools to inspect generated content, page boxes, and margin areas. Add temporary borders to page elements to visualize layout. Check the console for warnings about missing targets or invalid selectors.</p>
+	</div>
+
+	<div class="chapter">
+		<h2 class="chapter-header" id="chapter-8">8. Conclusion</h2>
+
+		<p>CSS Paged Media provides a powerful set of tools for creating professional-quality printed documents from web content. The <code>leader()</code> function, demonstrated throughout this document in the Table of Contents, is just one of many features that enable sophisticated page layout.</p>
+
+		<p>By combining leaders with target counters, page floats, footnotes, hyphenation, and generated content, you can create documents that rival those produced by traditional desktop publishing software.</p>
+
+		<p>The key to success is understanding how these features work together and testing your documents thoroughly across different output formats and devices.</p>
+
+		<div class="note">
+			<strong>Summary:</strong> This document has demonstrated the <code>leader()</code> function for creating dotted lines in tables of contents, along with related CSS Paged Media features including page floats, footnotes, hyphenation, and generated content. The TOC on page 1 uses <code>leader(dotted)</code> with <code>target-counter()</code> to automatically generate page-numbered entries with dotted leaders.
+		</div>
+	</div>
+</body>
+</html>

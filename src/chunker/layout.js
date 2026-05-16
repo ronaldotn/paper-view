@@ -26,6 +26,7 @@ import {
 } from "../utils/dom";
 import EventEmitter from "event-emitter";
 import Hook from "../utils/hook";
+import hyphenator from "../utils/hyphenator";
 
 const MAX_CHARS_PER_BREAK = 1500;
 
@@ -519,6 +520,19 @@ class Layout {
 		let right = 0;
 		let word, next, done, pos;
 		let offset;
+		let parentElement = node.parentNode;
+		let hyphenMode = parentElement ? parentElement.dataset.hyphens : null;
+		let lang = "en";
+
+		if (parentElement) {
+			let langAttr = parentElement.closest("[lang]");
+			if (langAttr) {
+				lang = langAttr.getAttribute("lang").substring(0, 2);
+			}
+		}
+
+		let shouldHyphenate = hyphenMode === "auto" || hyphenMode === "manual";
+
 		while (!done) {
 			next = wordwalker.next();
 			word = next.value;
@@ -539,26 +553,38 @@ class Layout {
 			}
 
 			if (right > end) {
-				let letterwalker = letters(word);
-				let letter, nextLetter, doneLetter;
+				let wordText = word.toString();
+				let hyphenBreakOffset = null;
 
-				while (!doneLetter) {
-					nextLetter = letterwalker.next();
-					letter = nextLetter.value;
-					doneLetter = nextLetter.done;
+				if (shouldHyphenate && wordText.length >= 5) {
+					hyphenBreakOffset = this.findHyphenBreakPoint(word, wordText, start, end, lang);
+				}
 
-					if (!letter) {
-						break;
-					}
+				if (hyphenBreakOffset !== null) {
+					offset = hyphenBreakOffset;
+					done = true;
+				} else {
+					let letterwalker = letters(word);
+					let letter, nextLetter, doneLetter;
 
-					pos = getBoundingClientRect(letter);
-					left = Math.floor(pos.left);
+					while (!doneLetter) {
+						nextLetter = letterwalker.next();
+						letter = nextLetter.value;
+						doneLetter = nextLetter.done;
 
-					if (left >= end) {
-						offset = letter.startOffset;
-						done = true;
+						if (!letter) {
+							break;
+						}
 
-						break;
+						pos = getBoundingClientRect(letter);
+						left = Math.floor(pos.left);
+
+						if (left >= end) {
+							offset = letter.startOffset;
+							done = true;
+
+							break;
+						}
 					}
 				}
 			}
@@ -566,6 +592,57 @@ class Layout {
 		}
 
 		return offset;
+	}
+
+	findHyphenBreakPoint(wordRange, wordText, start, end, lang) {
+		let cleanWord = wordText.replace(/[\u00AD\u2011]/g, "");
+
+		if (cleanWord.length < 5) {
+			return null;
+		}
+
+		let hyphenPoints = hyphenator.findHyphenationPoints(cleanWord, lang, {
+			minWordLength: 5,
+			minCharsBefore: 2,
+			minCharsAfter: 2
+		});
+
+		if (hyphenPoints.length === 0) {
+			return null;
+		}
+
+		let letterwalker = letters(wordRange);
+		let letter, nextLetter, doneLetter;
+		let charIndex = 0;
+		let hyphenOffsets = new Set(hyphenPoints);
+		let lastValidHyphen = null;
+
+		while (!doneLetter) {
+			nextLetter = letterwalker.next();
+			letter = nextLetter.value;
+			doneLetter = nextLetter.done;
+
+			if (!letter) {
+				break;
+			}
+
+			let pos = getBoundingClientRect(letter);
+			let left = Math.floor(pos.left);
+
+			if (hyphenOffsets.has(charIndex) && charIndex >= 2 && charIndex <= cleanWord.length - 2) {
+				lastValidHyphen = letter.startOffset;
+			}
+
+			if (left >= end) {
+				break;
+			}
+
+			if (letter.startContainer.textContent[charIndex] && !/[\u00AD\u2011]/.test(letter.startContainer.textContent[charIndex])) {
+				charIndex++;
+			}
+		}
+
+		return lastValidHyphen;
 	}
 
 	removeOverflow(overflow) {
@@ -580,12 +657,61 @@ class Layout {
 	hyphenateAtBreak(startContainer) {
 		if (isText(startContainer)) {
 			let startText = startContainer.textContent;
-			let prevLetter = startText[startText.length-1];
+			let prevLetter = startText[startText.length - 1];
+			let parentElement = startContainer.parentNode;
+			let hyphenMode = parentElement ? parentElement.dataset.hyphens : null;
 
-			// Add a hyphen if previous character is a letter or soft hyphen
-			if (/^\w|\u00AD$/.test(prevLetter)) {
-				startContainer.parentNode.classList.add("pagedjs_hyphen");
-				startContainer.textContent += "\u2011";
+			if (hyphenMode === "none") {
+				return;
+			}
+
+			let hyphenChar = this.chunker && this.chunker.hyphenateCharacter ? this.chunker.hyphenateCharacter : "\u2011";
+
+			if (hyphenMode === "manual" || hyphenMode === "auto") {
+				if (/^\w|\u00AD$/.test(prevLetter)) {
+					parentElement.classList.add("pagedjs_hyphen");
+
+					if (hyphenMode === "auto") {
+						let lang = "en";
+						let langAttr = parentElement.closest("[lang]");
+						if (langAttr) {
+							lang = langAttr.getAttribute("lang").substring(0, 2);
+						}
+
+						let options = {
+							hyphenCharacter: hyphenChar,
+							minWordLength: 5,
+							minCharsBefore: 2,
+							minCharsAfter: 2
+						};
+
+						if (this.chunker && this.chunker.hyphenateLimitChars) {
+							options.minCharsBefore = this.chunker.hyphenateLimitChars.before;
+							options.minCharsAfter = this.chunker.hyphenateLimitChars.after;
+							options.minWordLength = this.chunker.hyphenateLimitChars.total;
+						}
+
+						let lastWordMatch = startText.match(/([\w\u00C0-\u024F]+)[\s\u00AD]*$/);
+						if (lastWordMatch && lastWordMatch[1].length >= options.minWordLength) {
+							let lastWord = lastWordMatch[1];
+							let hyphenatedWord = hyphenator.hyphenate(lastWord, lang, options);
+
+							if (hyphenatedWord !== lastWord) {
+								let wordStartIndex = lastWordMatch.index;
+								let beforeWord = startText.substring(0, wordStartIndex);
+								startContainer.textContent = beforeWord + hyphenatedWord;
+								return;
+							}
+						}
+					}
+
+					startContainer.textContent += hyphenChar;
+				}
+			} else {
+				if (/^\w|\u00AD$/.test(prevLetter)) {
+					parentElement.classList.add("pagedjs_hyphen");
+					startContainer.textContent += "\u2011";
+				}
 			}
 		}
 	}

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spread Viewer Example - PaperView</title>
+    <link rel="stylesheet" href="../dist/css/paper.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px 20px;
+            background: #16213e;
+            border-bottom: 1px solid #0f3460;
+            flex-wrap: wrap;
+        }
+
+        .toolbar h1 {
+            font-size: 18px;
+            color: #e94560;
+            margin-right: auto;
+        }
+
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toolbar label {
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .toolbar select, .toolbar button {
+            padding: 8px 12px;
+            border: 1px solid #0f3460;
+            border-radius: 6px;
+            background: #1a1a2e;
+            color: #eee;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .toolbar select:hover, .toolbar button:hover {
+            border-color: #e94560;
+        }
+
+        .toolbar button.primary {
+            background: #e94560;
+            border-color: #e94560;
+            color: white;
+        }
+
+        .toolbar button.primary:hover {
+            background: #c73e54;
+        }
+
+        .toolbar button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .viewer-container {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+            background: #0f0f23;
+        }
+
+        #renderTo {
+            width: 100%;
+            height: 100%;
+        }
+
+        .status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 20px;
+            background: #16213e;
+            border-top: 1px solid #0f3460;
+            font-size: 13px;
+            color: #aaa;
+        }
+
+        .status-bar .info {
+            display: flex;
+            gap: 20px;
+        }
+
+        .status-bar .info span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-bar .info .label {
+            color: #666;
+        }
+
+        .status-bar .info .value {
+            color: #e94560;
+            font-weight: bold;
+        }
+
+        .keyboard-hints {
+            position: fixed;
+            bottom: 60px;
+            right: 20px;
+            background: rgba(22, 33, 62, 0.9);
+            border: 1px solid #0f3460;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 12px;
+            color: #aaa;
+            z-index: 100;
+        }
+
+        .keyboard-hints h4 {
+            margin-bottom: 8px;
+            color: #e94560;
+        }
+
+        .keyboard-hints ul {
+            list-style: none;
+        }
+
+        .keyboard-hints li {
+            margin: 4px 0;
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .keyboard-hints kbd {
+            background: #1a1a2e;
+            border: 1px solid #0f3460;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-family: monospace;
+            color: #eee;
+        }
+
+        .source-content {
+            display: none;
+        }
+
+        /* Spread viewer overrides */
+        .spread-viewer-wrapper {
+            background: #0f0f23 !important;
+        }
+
+        .spread-viewer-spread .pagedjs_page {
+            background: white !important;
+        }
+
+        .spread-viewer-nav {
+            background: rgba(22, 33, 62, 0.9) !important;
+            color: #eee !important;
+            border: 1px solid #0f3460 !important;
+        }
+
+        .spread-viewer-nav:hover {
+            background: #e94560 !important;
+            border-color: #e94560 !important;
+        }
+
+        .spread-viewer-zoom-btn, .spread-viewer-zoom-level {
+            background: rgba(22, 33, 62, 0.9) !important;
+            color: #eee !important;
+            border: 1px solid #0f3460 !important;
+        }
+
+        .spread-viewer-indicator {
+            background: rgba(22, 33, 62, 0.9) !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="toolbar">
+            <h1>📖 Spread Viewer</h1>
+
+            <div class="toolbar-group">
+                <label for="pageCount">Pages:</label>
+                <select id="pageCount">
+                    <option value="10">10</option>
+                    <option value="20" selected>20</option>
+                    <option value="50">50</option>
+                </select>
+            </div>
+
+            <div class="toolbar-group">
+                <label for="viewMode">Mode:</label>
+                <select id="viewMode">
+                    <option value="book">Book View</option>
+                    <option value="scroll">Scroll View</option>
+                </select>
+            </div>
+
+            <button id="renderBtn" class="primary">Render Document</button>
+        </div>
+
+        <div class="viewer-container">
+            <div id="renderTo"></div>
+        </div>
+
+        <div class="status-bar">
+            <div class="info">
+                <span><span class="label">Pages:</span> <span class="value" id="statusPages">-</span></span>
+                <span><span class="label">Spread:</span> <span class="value" id="statusSpread">-</span></span>
+                <span><span class="label">Zoom:</span> <span class="value" id="statusZoom">-</span></span>
+                <span><span class="label">Mode:</span> <span class="value" id="statusMode">-</span></span>
+            </div>
+            <div id="statusMessage">Click "Render Document" to start</div>
+        </div>
+    </div>
+
+    <div class="keyboard-hints">
+        <h4>Keyboard Shortcuts</h4>
+        <ul>
+            <li><span>Previous Spread</span> <span><kbd>←</kbd> <kbd>PgUp</kbd></span></li>
+            <li><span>Next Spread</span> <span><kbd>→</kbd> <kbd>PgDn</kbd></span></li>
+            <li><span>First Spread</span> <span><kbd>Home</kbd></span></li>
+            <li><span>Last Spread</span> <span><kbd>End</kbd></span></li>
+            <li><span>Zoom In</span> <span><kbd>Ctrl</kbd>+<kbd>+</kbd></span></li>
+            <li><span>Zoom Out</span> <span><kbd>Ctrl</kbd>+<kbd>-</kbd></span></li>
+            <li><span>Reset Zoom</span> <span><kbd>Ctrl</kbd>+<kbd>0</kbd></span></li>
+        </ul>
+    </div>
+
+    <div class="source-content" id="source-content"></div>
+
+    <script src="../dist/paperview.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const renderTo = document.getElementById("renderTo");
+            const renderBtn = document.getElementById("renderBtn");
+            const pageCountSelect = document.getElementById("pageCount");
+            const viewModeSelect = document.getElementById("viewMode");
+
+            const statusPages = document.getElementById("statusPages");
+            const statusSpread = document.getElementById("statusSpread");
+            const statusZoom = document.getElementById("statusZoom");
+            const statusMode = document.getElementById("statusMode");
+            const statusMessage = document.getElementById("statusMessage");
+
+            let previewer = null;
+
+            function generateContent(pageCount) {
+                let content = "";
+                for (let i = 0; i < pageCount; i++) {
+                    const isChapter = i % 5 === 0;
+                    content += `
+                        <section class="chapter">
+                            ${isChapter ? `<h1>Chapter ${Math.floor(i / 5) + 1}</h1>` : `<h2>Page ${i + 1}</h2>`}
+                            <p>
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                                Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.
+                            </p>
+                            <p>
+                                Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
+                                dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+                                proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+                            </p>
+                            <p>
+                                Sed ut perspiciatis unde omnis iste natus error sit voluptatem
+                                accusantium doloremque laudantium, totam rem aperiam.
+                            </p>
+                        </section>
+                    `;
+                }
+                return content;
+            }
+
+            function updateStatus(state) {
+                if (previewer && previewer.spreadViewer) {
+                    const sv = previewer.spreadViewer;
+                    const s = sv.getState();
+                    statusPages.textContent = sv.getTotalPages();
+                    statusSpread.textContent = `${s.currentSpread + 1} / ${s.totalSpreads}`;
+                    statusZoom.textContent = `${Math.round(s.zoom * 100)}%`;
+                    statusMode.textContent = s.mode === "book" ? "Book" : "Scroll";
+                }
+            }
+
+            async function render() {
+                if (previewer) {
+                    previewer.destroy();
+                    renderTo.innerHTML = "";
+                }
+
+                const pageCount = parseInt(pageCountSelect.value, 10);
+                const content = generateContent(pageCount);
+
+                const sourceContent = document.getElementById("source-content");
+                sourceContent.innerHTML = content;
+
+                renderBtn.disabled = true;
+                renderBtn.textContent = "Rendering...";
+                statusMessage.textContent = "Rendering document...";
+
+                previewer = new PaperView.Previewer({
+                    viewMode: "single",
+                    spreadViewer: true,
+                    spreadViewerOptions: {
+                        spreadMode: viewModeSelect.value,
+                        zoom: 1,
+                        enableKeyboard: true,
+                        enableTouch: true
+                    }
+                });
+
+                try {
+                    const flow = await previewer.preview(sourceContent, renderTo, []);
+
+                    previewer.spreadViewer.on("spreadChange", (data) => {
+                        updateStatus();
+                        statusMessage.textContent = `Viewing spread ${data.spread + 1} (pages ${data.pages.map(p => p + 1).join(", ")})`;
+                    });
+
+                    previewer.spreadViewer.on("zoomChange", (data) => {
+                        updateStatus();
+                    });
+
+                    previewer.spreadViewer.on("modeChange", (data) => {
+                        updateStatus();
+                        statusMessage.textContent = `Switched to ${data.mode} mode`;
+                    });
+
+                    updateStatus();
+                    statusMessage.textContent = "Document ready. Use arrows or keyboard to navigate.";
+                } catch (error) {
+                    console.error("Render error:", error);
+                    statusMessage.textContent = `Error: ${error.message}`;
+                }
+
+                renderBtn.disabled = false;
+                renderBtn.textContent = "Render Document";
+            }
+
+            renderBtn.addEventListener("click", render);
+
+            viewModeSelect.addEventListener("change", () => {
+                if (previewer && previewer.spreadViewer) {
+                    previewer.setSpreadViewerMode(viewModeSelect.value);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

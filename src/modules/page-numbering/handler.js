@@ -179,6 +179,16 @@ class PageNumberingHandler extends Handler {
 			score += 7;
 		}
 		
+		// :has() selectors are highly specific (content-based matching)
+		if (selector.includes(':has(')) score += 15;
+		
+		// :is() selectors take the specificity of their most specific argument
+		if (selector.includes(':is(')) {
+			score += 8;
+			if (selector.includes(':first')) score += 2;
+			if (selector.includes(':blank')) score += 2;
+		}
+		
 		return score;
 	}
 	

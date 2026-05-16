@@ -6,6 +6,9 @@ import Counters from "./counters";
 import Lists from "./lists";
 import ImageOverflowHandler from "./image-overflow";
 import PageNumberingHandler from "../page-numbering/handler.js";
+import Hyphens from "./hyphens";
+import Footnotes from "./footnotes";
+import PageFloats from "./page-floats";
 
 export default [
 	AtPage,
@@ -15,5 +18,8 @@ export default [
 	Counters,
 	Lists,
 	ImageOverflowHandler,
-	PageNumberingHandler
+	PageNumberingHandler,
+	Hyphens,
+	Footnotes,
+	PageFloats
 ];

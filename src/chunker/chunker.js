@@ -196,6 +196,11 @@ class Chunker {
 			rendered = await this.render(parsed, this.breakToken);
 		}
 
+		// Handle overset content if any
+		if (this.oversetPages().length > 0) {
+			await this.handleOverset(parsed);
+		}
+
 		this.rendered = true;
 
 		await this.hooks.afterRendered.trigger(this.pages, this);
@@ -234,33 +239,92 @@ class Chunker {
 		return this.layoutWorkerManager.getStats();
 	}
 
-	// oversetPages() {
-	// 	let overset = [];
-	// 	for (let i = 0; i < this.pages.length; i++) {
-	// 		let page = this.pages[i];
-	// 		if (page.overset) {
-	// 			overset.push(page);
-	// 			// page.overset = false;
-	// 		}
-	// 	}
-	// 	return overset;
-	// }
-	//
-	// async handleOverset(parsed) {
-	// 	let overset = this.oversetPages();
-	// 	if (overset.length) {
-	// 		console.log("overset", overset);
-	// 		let index = this.pages.indexOf(overset[0]) + 1;
-	// 		console.log("INDEX", index);
-	//
-	// 		// Remove pages
-	// 		// this.removePages(index);
-	//
-	// 		// await this.render(parsed, overset[0].overset);
-	//
-	// 		// return this.handleOverset(parsed);
-	// 	}
-	// }
+	/**
+	 * Find all pages that have overset content (content that didn't fit)
+	 * @returns {Array<Page>} Array of pages with overset content
+	 */
+	oversetPages() {
+		let overset = [];
+		for (let i = 0; i < this.pages.length; i++) {
+			let page = this.pages[i];
+			if (page.overset) {
+				overset.push(page);
+			}
+		}
+		return overset;
+	}
+
+	/**
+	 * Handle overset content by adding new pages and re-rendering
+	 * @param {ContentParser} parsed - The parsed content source
+	 * @param {number} maxIterations - Maximum iterations to prevent infinite loops
+	 * @returns {Promise<void>}
+	 */
+	async handleOverset(parsed, maxIterations = 50) {
+		let iterations = 0;
+
+		while (iterations < maxIterations) {
+			let overset = this.oversetPages();
+
+			if (overset.length === 0) {
+				break;
+			}
+
+			iterations++;
+
+			let firstOversetPage = overset[0];
+			let breakToken = firstOversetPage.endToken;
+			let startIndex = this.pages.indexOf(firstOversetPage) + 1;
+
+			this.emit("oversetDetected", {
+				page: firstOversetPage,
+				pageIndex: startIndex,
+				breakToken,
+				iteration: iterations
+			});
+
+			// Remove pages from the overset page onwards
+			this.removePages(startIndex);
+
+			// Re-render from the break token
+			let rendered = await this.render(parsed, breakToken);
+
+			if (rendered.canceled) {
+				this.start();
+				rendered = await this.render(parsed, breakToken);
+			}
+
+			// Check if we still have overset content
+			if (this.oversetPages().length === 0) {
+				break;
+			}
+		}
+
+		if (iterations >= maxIterations) {
+			console.warn(`Overset handling stopped after ${maxIterations} iterations. Content may be truncated.`);
+			this.emit("oversetMaxIterations", { iterations: maxIterations });
+		}
+	}
+
+	/**
+	 * Get summary of overset content status
+	 * @returns {object} Overset information
+	 */
+	getOversetInfo() {
+		let oversetPages = this.oversetPages();
+		return {
+			hasOverset: oversetPages.length > 0,
+			oversetPageCount: oversetPages.length,
+			oversetPages: oversetPages.map(page => ({
+				index: this.pages.indexOf(page),
+				id: page.id,
+				breakToken: page.endToken ? {
+					node: page.endToken.node?.nodeName,
+					offset: page.endToken.offset
+				} : null
+			}))
+		};
+	}
 
 	async render(parsed, startAt) {
 		let renderer = this.layout(parsed, startAt);
@@ -426,6 +490,12 @@ class Chunker {
 	async *layout(content, startAt) {
 		let breakToken = startAt || false;
 
+		// If using workers, pre-calculate break points in batch
+		if (this._useWorkers && this.layoutWorkerManager && !breakToken) {
+			yield* this.layoutWithWorkers(content);
+			return;
+		}
+
 		while (breakToken !== undefined && (MAX_PAGES ? (this.total < MAX_PAGES) : true)) {
 
 			if (breakToken && breakToken.node) {
@@ -451,6 +521,111 @@ class Chunker {
 
 			// Stop if we get undefined, showing we have reached the end of the content
 		}
+	}
+
+	/**
+	 * Layout using Web Workers - pre-calculates break points off main thread
+	 */
+	async *layoutWithWorkers(content) {
+		// Serialize content for worker analysis
+		const serializedContent = this.serializeContent(content);
+		const bounds = this.pagesArea.getBoundingClientRect();
+
+		// Send to worker for break point analysis
+		const workerResult = await this.layoutWorkerManager.calculateLayout(
+			serializedContent,
+			{ width: bounds.width, height: bounds.height },
+			this.maxChars,
+			0
+		);
+
+		if (workerResult.error) {
+			console.warn("Worker layout failed, falling back to main thread:", workerResult.error);
+			// Fallback to main thread layout
+			let breakToken = false;
+			while (breakToken !== undefined && (MAX_PAGES ? (this.total < MAX_PAGES) : true)) {
+				if (breakToken && breakToken.node) {
+					await this.handleBreaks(breakToken.node);
+				} else {
+					await this.handleBreaks(content.firstChild);
+				}
+
+				let page = this.addPage();
+				await this.hooks.beforePageLayout.trigger(page, content, breakToken, this);
+				this.emit("page", page);
+				breakToken = await page.layout(content, breakToken, this.maxChars);
+				await this.hooks.afterPageLayout.trigger(page.element, page, breakToken, this);
+				this.emit("renderedPage", page);
+				this.recoredCharLength(page.wrapper.textContent.length);
+				yield breakToken;
+			}
+			return;
+		}
+
+		// Worker returned break point analysis - use it to guide layout
+		this.emit("workerLayoutComplete", {
+			nodesProcessed: workerResult.nodesProcessed,
+			breaksFound: workerResult.breakFound
+		});
+
+		// Still need to do actual DOM layout on main thread, but worker
+		// has already analyzed the content structure
+		let breakToken = false;
+		let pageCount = 0;
+
+		while (breakToken !== undefined && (MAX_PAGES ? (this.total < MAX_PAGES) : true)) {
+			if (breakToken && breakToken.node) {
+				await this.handleBreaks(breakToken.node);
+			} else {
+				await this.handleBreaks(content.firstChild);
+			}
+
+			let page = this.addPage();
+			await this.hooks.beforePageLayout.trigger(page, content, breakToken, this);
+			this.emit("page", page);
+
+			breakToken = await page.layout(content, breakToken, this.maxChars);
+
+			await this.hooks.afterPageLayout.trigger(page.element, page, breakToken, this);
+			this.emit("renderedPage", page);
+			this.recoredCharLength(page.wrapper.textContent.length);
+
+			pageCount++;
+			yield breakToken;
+		}
+	}
+
+	/**
+	 * Serialize DOM content for worker analysis
+	 */
+	serializeContent(content) {
+		if (!content) return null;
+
+		const serialize = (node) => {
+			if (!node) return null;
+
+			const serialized = {
+				nodeType: node.nodeType,
+				tagName: node.tagName || null,
+				textContent: node.textContent || null,
+				dataRef: node.dataset && node.dataset.ref || null,
+				breakBefore: node.dataset && node.dataset.breakBefore || null,
+				previousBreakAfter: node.dataset && node.dataset.previousBreakAfter || null,
+				breakInside: node.dataset && node.dataset.breakInside || null,
+				page: node.dataset && node.dataset.page || null,
+				children: []
+			};
+
+			if (node.childNodes && node.childNodes.length > 0) {
+				for (let i = 0; i < node.childNodes.length; i++) {
+					serialized.children.push(serialize(node.childNodes[i]));
+				}
+			}
+
+			return serialized;
+		};
+
+		return serialize(content);
 	}
 
 	recoredCharLength(length) {
@@ -596,6 +771,217 @@ class Chunker {
 		return page;
 	}
 	*/
+
+	/**
+	 * Insert a page at a specific index position
+	 * @param {number} index - Position to insert (0 = before first page)
+	 * @param {object} [options] - Insertion options
+	 * @param {boolean} [options.blank=false] - Create a blank page without content
+	 * @param {string|HTMLElement|DocumentFragment} [options.content] - Custom content to inject
+	 * @param {string} [options.name] - Named page type (e.g., "cover", "toc")
+	 * @param {string} [options.className] - Additional CSS class for the page
+	 * @param {number} [options.pageNumberOverride] - Override the page counter value
+	 * @param {boolean} [options.breakBefore] - Force a page break before insertion
+	 * @returns {Page} The inserted page instance
+	 */
+	insertPage(index, options = {}) {
+		const {
+			blank = false,
+			content = null,
+			name = null,
+			className = null,
+			pageNumberOverride = null,
+			breakBefore = false
+		} = typeof options === "boolean" ? { blank: options } : options;
+
+		if (index < 0) {
+			index = 0;
+		}
+		if (index > this.pages.length) {
+			index = this.pages.length;
+		}
+
+		const referencePage = this.pages[index] || null;
+		const page = new Page(this.pagesArea, this.pageTemplate, blank, this.hooks, this.viewMode);
+
+		if (name) {
+			page.name = name;
+		}
+
+		this.pages.splice(index, 0, page);
+
+		const insertAfterElement = index > 0 ? this.pages[index - 1].element : null;
+		page.create(undefined, insertAfterElement);
+
+		if (className) {
+			page.element.classList.add(className);
+		}
+
+		if (breakBefore) {
+			page.element.style.breakBefore = "page";
+		}
+
+		this.reindexPagesFrom(index);
+
+		if (pageNumberOverride !== null) {
+			page.element.style.counterReset = `page ${pageNumberOverride}`;
+		}
+
+		if (this.pageNumbering && this.pageNumbering.isEnabled() && !blank) {
+			this.pageNumbering.renderPageNumber(page.element, index, this.pages.length);
+		}
+
+		if (content) {
+			this.injectPageContent(page, content);
+		}
+
+		if (!blank && !content) {
+			page.onOverflow((overflowToken) => {
+				if (this.rendered) {
+					return;
+				}
+
+				const pageIndex = this.pages.indexOf(page) + 1;
+				this.stop();
+				this.breakToken = overflowToken;
+				this.removePages(pageIndex);
+
+				if (this.rendered === true) {
+					this.rendered = false;
+					this.q.enqueue(async () => {
+						this.start();
+						await this.render(this.source, this.breakToken);
+						this.rendered = true;
+					});
+				}
+			});
+
+			page.onUnderflow(() => {
+				// Underflow handling for inserted pages
+			});
+		}
+
+		this.total = this.pages.length;
+
+		this.emit("pageInserted", page, index);
+
+		return page;
+	}
+
+	/**
+	 * Insert multiple pages at once
+	 * @param {number} startIndex - Position to start inserting
+	 * @param {Array<object>} pageConfigs - Array of page configuration objects
+	 * @returns {Page[]} Array of inserted page instances
+	 */
+	insertPages(startIndex, pageConfigs) {
+		const inserted = [];
+
+		pageConfigs.forEach((config, i) => {
+			const page = this.insertPage(startIndex + i, config);
+			inserted.push(page);
+		});
+
+		return inserted;
+	}
+
+	/**
+	 * Prepend a page at the beginning (shorthand for insertPage(0))
+	 * @param {object} [options] - Page options
+	 * @returns {Page} The inserted page instance
+	 */
+	prependPage(options = {}) {
+		return this.insertPage(0, options);
+	}
+
+	/**
+	 * Append a page at the end (alias for addPage with options support)
+	 * @param {object} [options] - Page options
+	 * @returns {Page} The inserted page instance
+	 */
+	appendPage(options = {}) {
+		return this.insertPage(this.pages.length, options);
+	}
+
+	/**
+	 * Remove a page at a specific index
+	 * @param {number} index - Page index to remove
+	 * @returns {boolean} Whether the page was removed successfully
+	 */
+	removePage(index) {
+		if (index < 0 || index >= this.pages.length) {
+			return false;
+		}
+
+		const page = this.pages[index];
+		page.element.remove();
+		this.pages.splice(index, 1);
+
+		this.reindexPagesFrom(index);
+		this.total = this.pages.length;
+
+		this.emit("pageRemoved", index);
+
+		return true;
+	}
+
+	/**
+	 * Replace a page at a specific index with new content
+	 * @param {number} index - Page index to replace
+	 * @param {object} [options] - Page options
+	 * @returns {Page} The new page instance
+	 */
+	replacePage(index, options = {}) {
+		this.removePage(index);
+		return this.insertPage(index, options);
+	}
+
+	/**
+	 * Re-index all pages starting from a given index
+	 * @param {number} fromIndex - Index to start re-indexing from
+	 * @private
+	 */
+	reindexPagesFrom(fromIndex) {
+		for (let i = fromIndex; i < this.pages.length; i++) {
+			this.pages[i].index(i);
+
+			if (this.viewMode !== "single") {
+				const el = this.pages[i].element;
+				if (i % 2 !== 1) {
+					el.classList.remove("pagedjs_left_page");
+					el.classList.add("pagedjs_right_page");
+				} else {
+					el.classList.remove("pagedjs_right_page");
+					el.classList.add("pagedjs_left_page");
+				}
+			}
+
+			if (this.pageNumbering && this.pageNumbering.isEnabled() && !this.pages[i].blank) {
+				const existingPageNum = this.pages[i].element.querySelector(".pagedjs_page_number");
+				if (existingPageNum) {
+					existingPageNum.remove();
+				}
+				this.pageNumbering.renderPageNumber(this.pages[i].element, i, this.pages.length);
+			}
+		}
+	}
+
+	/**
+	 * Inject content into a page element
+	 * @param {Page} page - Page instance
+	 * @param {string|HTMLElement|DocumentFragment} content - Content to inject
+	 * @private
+	 */
+	injectPageContent(page, content) {
+		const wrapper = page.createWrapper();
+
+		if (typeof content === "string") {
+			const fragment = document.createRange().createContextualFragment(content);
+			wrapper.appendChild(fragment);
+		} else if (content instanceof HTMLElement || content instanceof DocumentFragment) {
+			wrapper.appendChild(content.cloneNode ? content.cloneNode(true) : content);
+		}
+	}
 
 	get total() {
 		return this._total;

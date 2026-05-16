@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Footnotes Example - PaperView</title>
+    <link rel="stylesheet" href="../dist/css/paper.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px 20px;
+            background: #16213e;
+            border-bottom: 1px solid #0f3460;
+            flex-wrap: wrap;
+        }
+
+        .toolbar h1 {
+            font-size: 18px;
+            color: #e94560;
+            margin-right: auto;
+        }
+
+        .toolbar-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toolbar label {
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .toolbar select, .toolbar button {
+            padding: 8px 12px;
+            border: 1px solid #0f3460;
+            border-radius: 6px;
+            background: #1a1a2e;
+            color: #eee;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .toolbar select:hover, .toolbar button:hover {
+            border-color: #e94560;
+        }
+
+        .toolbar button.primary {
+            background: #e94560;
+            border-color: #e94560;
+            color: white;
+        }
+
+        .toolbar button.primary:hover {
+            background: #c73e54;
+        }
+
+        .viewer-container {
+            flex: 1;
+            overflow: auto;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        #viewport {
+            background: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .info-box {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #16213e;
+            border: 1px solid #0f3460;
+            border-radius: 8px;
+            padding: 16px;
+            max-width: 320px;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #ccc;
+        }
+
+        .info-box h3 {
+            color: #e94560;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .info-box code {
+            background: #0f3460;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+            color: #4fc3f7;
+        }
+
+        .status {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .status.rendering {
+            background: #f39c12;
+            color: #000;
+        }
+
+        .status.done {
+            background: #27ae60;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="toolbar">
+            <h1>Footnotes Demo</h1>
+            <div class="toolbar-group">
+                <label for="footnoteDisplay">Display:</label>
+                <select id="footnoteDisplay">
+                    <option value="block">block</option>
+                    <option value="inline">inline</option>
+                    <option value="compact">compact</option>
+                </select>
+            </div>
+            <div class="toolbar-group">
+                <label for="footnotePolicy">Policy:</label>
+                <select id="footnotePolicy">
+                    <option value="line">line</option>
+                    <option value="keep">keep</option>
+                    <option value="block">block</option>
+                </select>
+            </div>
+            <button id="renderBtn" class="primary">Render</button>
+            <span id="status" class="status"></span>
+        </div>
+
+        <div class="viewer-container">
+            <div id="viewport"></div>
+        </div>
+    </div>
+
+    <div class="info-box">
+        <h3>CSS Footnotes Support</h3>
+        <p><code>float: footnote</code> - Marks element as footnote</p>
+        <p><code>footnote-display: block | inline | compact</code></p>
+        <p><code>footnote-policy: line | keep | block</code></p>
+        <p style="margin-top: 8px;"><code>::footnote-call</code> - Reference marker in text</p>
+        <p><code>::footnote-marker</code> - Number in footnote area</p>
+        <p><code>@footnote</code> - Area styling in @page</p>
+    </div>
+
+    <div id="content" style="display: none;">
+        <article>
+            <h1>Understanding CSS Footnotes in Paged Media</h1>
+
+            <p>Footnotes are an essential typographic feature for academic and technical publications. The CSS Paged Media specification defines a comprehensive model for handling footnotes, including the <code>float: footnote</code> property, footnote-call pseudo-elements, and footnote markers.<span class="footnote">The CSS Paged Media Module Level 3 specification defines the footnote model. See https://www.w3.org/TR/css-page-3/ for details.</span></p>
+
+            <h2>The Footnote Model</h2>
+
+            <p>When an element is assigned <code>float: footnote</code>, it is removed from the normal flow and placed in a footnote area at the bottom of the page. A footnote-call is inserted at the original location in the text, typically displayed as a superscript number.<span class="footnote">The footnote-call is automatically generated by the user agent and inserted inline at the point where the footnote element appeared in the source.</span></p>
+
+            <p>The footnote area is a special region at the bottom of each page that collects all footnotes referenced on that page. Footnotes are numbered sequentially within each page or throughout the document, depending on the counter configuration.<span class="footnote">Some implementations allow footnote numbering to restart on each page, while others continue numbering throughout the document. PaperView supports both approaches through the counter system.</span></p>
+
+            <h2>Footnote Display Modes</h2>
+
+            <p>The <code>footnote-display</code> property controls how footnotes are rendered in the footnote area:</p>
+
+            <ul>
+                <li><strong>block</strong> (default): Each footnote is displayed as a block element with the marker on its own line or inline with the content.</li>
+                <li><strong>inline</strong>: Footnotes are displayed inline, one after another, separated by spaces or other delimiters.</li>
+                <li><strong>compact</strong>: A compact display mode that minimizes vertical space between footnotes.</li>
+            </ul>
+
+            <p>The choice of display mode depends on the publication style and the amount of footnote content. Academic publications typically use block display, while some technical manuals may prefer compact display to save space.<span class="footnote">The compact display mode is particularly useful when footnotes are short and numerous, such as in legal documents or technical specifications.</span></p>
+
+            <h2>Footnote Policy</h2>
+
+            <p>The <code>footnote-policy</code> property determines how the user agent handles footnotes when there is insufficient space on the page:</p>
+
+            <ul>
+                <li><strong>line</strong> (default): If the footnote reference fits on the line but the footnote area is full, the footnote may be moved to the next page.</li>
+                <li><strong>keep</strong>: The footnote reference and its footnote are kept together on the same page. If there is not enough space, both are moved to the next page.</li>
+                <li><strong>block</strong>: Similar to keep, but applies to block-level elements containing footnote references.</li>
+            </ul>
+
+            <p>The policy setting affects the reading experience significantly. The <code>keep</code> policy ensures that readers can always find the footnote on the same page as the reference, but may result in more page breaks.<span class="footnote">In practice, most publications use the "line" policy as it provides a good balance between keeping references with their footnotes and avoiding excessive page breaks.</span></p>
+
+            <h2>Implementation Details</h2>
+
+            <p>PaperView's footnote implementation follows the CSS Paged Media specification closely. When a document is processed:</p>
+
+            <ol>
+                <li>Elements with <code>float: footnote</code> are identified during CSS parsing.</li>
+                <li>Each footnote element is replaced in the text flow with a footnote-call span containing the footnote number.</li>
+                <li>The original footnote content is collected and placed in the footnote area at the bottom of the page.</li>
+                <li>Footnotes are numbered sequentially using CSS counters.</li>
+                <li>The footnote area is styled according to the @footnote rules defined in the stylesheet.</li>
+            </ol>
+
+            <p>The implementation handles edge cases such as footnotes that span multiple pages, footnotes in marginalia, and footnotes within tables or other complex layouts.<span class="footnote">Handling footnotes in complex layouts requires careful tracking of which page each footnote belongs to, especially when content flows across page boundaries. PaperView uses the break token system to manage this.</span></p>
+
+            <h2>Styling Footnotes</h2>
+
+            <p>Footnotes can be styled using the <code>@footnote</code> at-rule within <code>@page</code> rules:</p>
+
+            <pre><code>@page {
+    @footnote {
+        border-top: 1px solid #333;
+        padding-top: 6pt;
+        margin-top: 12pt;
+        font-size: 9pt;
+    }
+}</code></pre>
+
+            <p>Additionally, the <code>::footnote-call</code> and <code>::footnote-marker</code> pseudo-elements can be styled to customize the appearance of the reference markers:<span class="footnote">The pseudo-element syntax follows standard CSS conventions. For example, <code>::footnote-call { color: blue; }</code> would make all footnote reference numbers blue.</span></p>
+
+            <pre><code>::footnote-call {
+    color: #0066cc;
+    font-size: 0.75em;
+}
+
+::footnote-marker {
+    font-weight: bold;
+    color: #333;
+}</code></pre>
+
+            <h2>Accessibility Considerations</h2>
+
+            <p>Footnotes present unique accessibility challenges. Screen readers need to be able to navigate between footnote references and their content. PaperView's implementation includes click handlers that allow users to jump from a footnote reference to its content in the footnote area.<span class="footnote">Future versions may include ARIA attributes to improve screen reader navigation, such as aria-describedby linking references to their footnotes.</span></p>
+
+            <h2>Historical Context</h2>
+
+            <p>Footnotes have a long history in typography, dating back to medieval manuscripts. The modern footnote convention of sequential numbering at the bottom of the page was standardized in the 18th century. CSS Paged Media brings this traditional typographic feature to the web, enabling high-quality digital publications.<span class="footnote">The history of footnotes is fascinating. They evolved from marginal glosses in medieval manuscripts, where scribes would add explanatory notes in the margins. As printing developed, these marginal notes moved to the bottom of the page, becoming the footnotes we know today.</span></p>
+
+            <h2>Conclusion</h2>
+
+            <p>CSS footnotes provide a powerful mechanism for creating professional-quality paged media documents. By combining <code>float: footnote</code>, footnote-call markers, and the @footnote area, authors can create rich, well-structured documents with proper footnote handling. PaperView's implementation makes these features available in web-based publishing workflows.<span class="footnote">For more information on CSS Paged Media features, consult the W3C specification and the PaperView documentation. The footnotes module is fully integrated with the counter system, string-sets, and other PaperView features.</span></p>
+        </article>
+    </div>
+
+    <script type="module">
+        import PaperView from '../dist/paperview.esm.js';
+
+        const viewport = document.getElementById('viewport');
+        const content = document.getElementById('content');
+        const renderBtn = document.getElementById('renderBtn');
+        const statusEl = document.getElementById('status');
+        const footnoteDisplaySelect = document.getElementById('footnoteDisplay');
+        const footnotePolicySelect = document.getElementById('footnotePolicy');
+
+        let paperView = null;
+
+        async function render() {
+            if (paperView) {
+                paperView.destroy();
+                viewport.innerHTML = '';
+            }
+
+            const display = footnoteDisplaySelect.value;
+            const policy = footnotePolicySelect.value;
+
+            const clone = content.cloneNode(true);
+            clone.style.display = 'block';
+
+            const style = document.createElement('style');
+            style.textContent = `
+                * { hyphens: auto; }
+                body {
+                    font-family: Georgia, 'Times New Roman', serif;
+                    font-size: 11pt;
+                    line-height: 1.5;
+                    color: #333;
+                    max-width: 100%;
+                }
+                h1 { font-size: 18pt; margin-bottom: 12pt; }
+                h2 { font-size: 14pt; margin-top: 16pt; margin-bottom: 8pt; }
+                p { margin-bottom: 8pt; text-align: justify; }
+                ul, ol { margin-left: 20pt; margin-bottom: 8pt; }
+                li { margin-bottom: 4pt; }
+                code {
+                    background: #f4f4f4;
+                    padding: 2px 4px;
+                    border-radius: 3px;
+                    font-family: monospace;
+                    font-size: 10pt;
+                }
+                pre {
+                    background: #f4f4f4;
+                    padding: 12pt;
+                    border-radius: 4px;
+                    overflow-x: auto;
+                    margin-bottom: 8pt;
+                }
+
+                .footnote {
+                    float: footnote;
+                    footnote-display: ${display};
+                    footnote-policy: ${policy};
+                }
+
+                @page {
+                    @footnote {
+                        border-top: 1px solid #333;
+                        padding-top: 6pt;
+                        margin-top: 12pt;
+                        font-size: 9pt;
+                    }
+                }
+            `;
+            clone.querySelector('article').prepend(style);
+
+            statusEl.textContent = 'Rendering...';
+            statusEl.className = 'status rendering';
+            renderBtn.disabled = true;
+
+            paperView = new PaperView();
+
+            paperView.render(clone.innerHTML, {
+                size: 'letter',
+                margin: '1in'
+            }).then(() => {
+                statusEl.textContent = 'Done';
+                statusEl.className = 'status done';
+                renderBtn.disabled = false;
+            }).catch(err => {
+                statusEl.textContent = 'Error: ' + err.message;
+                statusEl.className = 'status';
+                renderBtn.disabled = false;
+            });
+        }
+
+        renderBtn.addEventListener('click', render);
+
+        render();
+    </script>
+</body>
+</html>

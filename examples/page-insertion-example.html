@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>PaperView - Page Insertion API Example</title>
+	<style>
+		@page {
+			size: A4;
+			margin: 2.5cm 2cm;
+
+			@top-center {
+				content: "Page Insertion API Demo";
+				font-size: 9pt;
+				color: #666;
+			}
+
+			@bottom-center {
+				content: counter(page);
+				font-size: 10pt;
+			}
+		}
+
+		@page cover {
+			@top-center { content: none; }
+			@bottom-center { content: none; }
+		}
+
+		@page toc {
+			@top-center {
+				content: "Table of Contents";
+				font-size: 9pt;
+				color: #666;
+				font-style: italic;
+			}
+		}
+
+		body {
+			font-family: "Georgia", "Times New Roman", serif;
+			line-height: 1.6;
+			color: #1a1a1a;
+			max-width: 100%;
+		}
+
+		h1 {
+			font-size: 28pt;
+			margin-bottom: 8pt;
+			color: #111;
+		}
+
+		h2 {
+			font-size: 18pt;
+			margin-top: 24pt;
+			margin-bottom: 12pt;
+			color: #2c3e50;
+			border-bottom: 1px solid #ddd;
+			padding-bottom: 6pt;
+		}
+
+		h3 {
+			font-size: 14pt;
+			margin-top: 18pt;
+			margin-bottom: 8pt;
+			color: #34495e;
+		}
+
+		p {
+			margin-bottom: 12pt;
+			text-align: justify;
+		}
+
+		/* Cover page styles */
+		.pagedjs_cover_page .pagedjs_pagebox {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.cover-content {
+			text-align: center;
+			padding: 48pt;
+		}
+
+		.cover-content h1 {
+			font-size: 36pt;
+			color: #1a1a1a;
+			margin-bottom: 12pt;
+			border-bottom: 3px solid #333;
+			padding-bottom: 18pt;
+		}
+
+		.cover-content .subtitle {
+			font-size: 16pt;
+			color: #666;
+			font-style: italic;
+			margin-bottom: 36pt;
+		}
+
+		.cover-content .author {
+			font-size: 14pt;
+			color: #333;
+			margin-bottom: 48pt;
+		}
+
+		.cover-content .date {
+			font-size: 11pt;
+			color: #999;
+		}
+
+		/* TOC styles */
+		.toc-container {
+			padding: 12pt 0;
+		}
+
+		.toc-container h2 {
+			font-size: 22pt;
+			color: #111;
+			border-bottom: 2px solid #333;
+			margin-bottom: 18pt;
+		}
+
+		.toc-container ul {
+			list-style: none;
+			padding: 0;
+			margin: 0;
+		}
+
+		.toc-container li {
+			margin-bottom: 8pt;
+			font-size: 11pt;
+		}
+
+		.toc-container li a {
+			text-decoration: none;
+			color: inherit;
+		}
+
+		/* Title page styles */
+		.title-content {
+			text-align: center;
+			padding-top: 30%;
+		}
+
+		.title-content h1 {
+			font-size: 32pt;
+			color: #1a1a1a;
+			margin-bottom: 18pt;
+		}
+
+		.title-content .edition {
+			font-size: 14pt;
+			color: #666;
+			margin-bottom: 36pt;
+		}
+
+		.title-content .publisher {
+			font-size: 12pt;
+			color: #999;
+			margin-top: 48pt;
+		}
+
+		/* Content page styles */
+		.chapter {
+			margin-bottom: 24pt;
+		}
+
+		.chapter-header {
+			font-size: 22pt;
+			color: #1a1a1a;
+			margin-bottom: 18pt;
+			padding-bottom: 12pt;
+			border-bottom: 2px solid #333;
+		}
+
+		.section-header {
+			font-size: 16pt;
+			color: #2c3e50;
+			margin-top: 24pt;
+			margin-bottom: 12pt;
+		}
+
+		.note {
+			padding: 12pt;
+			background: #e7f3ff;
+			border-left: 4px solid #2196F3;
+			margin: 18pt 0;
+			font-size: 10pt;
+		}
+
+		.note strong {
+			color: #1976D2;
+		}
+
+		/* Appendix styles */
+		.pagedjs_appendix_page {
+			background-color: #fafafa;
+		}
+
+		.appendix-header {
+			font-size: 20pt;
+			color: #555;
+			margin-bottom: 18pt;
+			padding-bottom: 12pt;
+			border-bottom: 1px dashed #ccc;
+		}
+
+		/* API usage example code */
+		.code-block {
+			background: #f5f5f5;
+			border: 1px solid #ddd;
+			border-radius: 4px;
+			padding: 12pt;
+			font-family: "Courier New", monospace;
+			font-size: 9pt;
+			line-height: 1.4;
+			overflow-x: auto;
+			margin: 12pt 0;
+		}
+
+		.api-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin: 18pt 0;
+			font-size: 10pt;
+		}
+
+		.api-table th,
+		.api-table td {
+			border: 1px solid #ddd;
+			padding: 8pt;
+			text-align: left;
+		}
+
+		.api-table th {
+			background: #f8f9fa;
+			font-weight: bold;
+		}
+
+		.api-table code {
+			background: #e9ecef;
+			padding: 2pt 4pt;
+			border-radius: 2px;
+			font-size: 9pt;
+		}
+	</style>
+</head>
+<body>
+	<div id="content">
+		<h2 class="chapter-header" id="chapter-1">1. Introduction to Page Insertion API</h2>
+
+		<p>The Page Insertion API provides powerful methods for dynamically adding, removing, and manipulating pages in a PaperView document. This is essential for creating professional documents with cover pages, tables of contents, title pages, and appendices.</p>
+
+		<h3 class="section-header" id="section-1-1">1.1 Overview</h3>
+
+		<p>Traditional paged media workflows render content sequentially from start to finish. The Page Insertion API breaks this paradigm by allowing you to:</p>
+
+		<p>Insert pages at any position in the document, before or after the main content flow. Add blank pages for layout purposes, such as ensuring chapters start on right-hand pages. Inject custom content like covers, TOCs, and appendices. Remove or replace pages dynamically based on content changes. Re-index page numbers automatically after any modification.</p>
+
+		<h3 class="section-header" id="section-1-2">1.2 Use Cases</h3>
+
+		<p><strong>Cover Pages</strong> - Add a professionally designed cover page before the main content.</p>
+
+		<p><strong>Table of Contents</strong> - Generate a dynamic TOC that can be inserted at any position.</p>
+
+		<p><strong>Title Pages</strong> - Create separate title pages for different sections or chapters.</p>
+
+		<p><strong>Blank Pages</strong> - Insert blank pages to ensure chapters start on recto (right-hand) pages.</p>
+
+		<p><strong>Appendices</strong> - Add supplementary content pages at the end of the document.</p>
+
+		<p><strong>Dynamic Content</strong> - Insert pages based on runtime conditions or user input.</p>
+
+		<div class="note">
+			<strong>Note:</strong> This document itself demonstrates the Page Insertion API. The cover page, TOC, title page, and appendix you see were all inserted dynamically using the API methods described here.
+		</div>
+	</div>
+
+	<div id="chapter-2" class="chapter">
+		<h2 class="chapter-header">2. API Reference</h2>
+
+		<h3 class="section-header" id="section-2-1">2.1 insertPage(index, options)</h3>
+
+		<p>The core method for inserting a single page at a specific position.</p>
+
+		<div class="code-block">
+const page = chunker.insertPage(0, {
+	blank: false,
+	content: '&lt;h1&gt;Cover Page&lt;/h1&gt;',
+	name: 'cover',
+	className: 'my-cover',
+	pageNumberOverride: null,
+	breakBefore: false
+});
+		</div>
+
+		<table class="api-table">
+			<thead>
+				<tr>
+					<th>Parameter</th>
+					<th>Type</th>
+					<th>Description</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td><code>index</code></td>
+					<td>number</td>
+					<td>Position to insert (0 = before first page)</td>
+				</tr>
+				<tr>
+					<td><code>options.blank</code></td>
+					<td>boolean</td>
+					<td>Create a blank page without content</td>
+				</tr>
+				<tr>
+					<td><code>options.content</code></td>
+					<td>string|HTMLElement</td>
+					<td>Custom content to inject into the page</td>
+				</tr>
+				<tr>
+					<td><code>options.name</code></td>
+					<td>string</td>
+					<td>Named page type for CSS @page rules</td>
+				</tr>
+				<tr>
+					<td><code>options.className</code></td>
+					<td>string</td>
+					<td>Additional CSS class for the page element</td>
+				</tr>
+				<tr>
+					<td><code>options.pageNumberOverride</code></td>
+					<td>number</td>
+					<td>Override the page counter value</td>
+				</tr>
+				<tr>
+					<td><code>options.breakBefore</code></td>
+					<td>boolean</td>
+					<td>Force a page break before insertion</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<h3 class="section-header" id="section-2-2">2.2 insertPages(startIndex, pageConfigs)</h3>
+
+		<p>Insert multiple pages at once with an array of configurations.</p>
+
+		<div class="code-block">
+const pages = chunker.insertPages(0, [
+	{ blank: true, name: 'cover' },
+	{ content: tocHTML, name: 'toc' },
+	{ blank: true, name: 'title' }
+]);
+		</div>
+
+		<h3 class="section-header" id="section-2-3">2.3 prependPage(options)</h3>
+
+		<p>Shorthand for inserting a page at the beginning (index 0).</p>
+
+		<div class="code-block">
+const coverPage = chunker.prependPage({
+	content: '&lt;h1&gt;Document Title&lt;/h1&gt;',
+	name: 'cover'
+});
+		</div>
+
+		<h3 class="section-header" id="section-2-4">2.4 appendPage(options)</h3>
+
+		<p>Insert a page at the end of the document.</p>
+
+		<div class="code-block">
+const appendix = chunker.appendPage({
+	content: '&lt;h2&gt;Appendix A&lt;/h2&gt;',
+	name: 'appendix'
+});
+		</div>
+
+		<h3 class="section-header" id="section-2-5">2.5 removePage(index)</h3>
+
+		<p>Remove a page at a specific index. Returns true if successful.</p>
+
+		<div class="code-block">
+const removed = chunker.removePage(2);
+		</div>
+
+		<h3 class="section-header" id="section-2-6">2.6 replacePage(index, options)</h3>
+
+		<p>Replace a page at a specific index with new content.</p>
+
+		<div class="code-block">
+const newPage = chunker.replacePage(1, {
+	content: '&lt;h2&gt;Updated Content&lt;/h2&gt;'
+});
+		</div>
+	</div>
+
+	<div id="chapter-3" class="chapter">
+		<h2 class="chapter-header">3. Events</h2>
+
+		<p>The Page Insertion API emits events that you can listen to for custom behavior.</p>
+
+		<h3 class="section-header" id="section-3-1">3.1 pageInserted</h3>
+
+		<p>Emitted when a page is successfully inserted. Provides the page instance and its index.</p>
+
+		<div class="code-block">
+chunker.on('pageInserted', (page, index) => {
+	console.log(`Page inserted at index ${index}`);
+	console.log('Page element:', page.element);
+});
+		</div>
+
+		<h3 class="section-header" id="section-3-2">3.2 pageRemoved</h3>
+
+		<p>Emitted when a page is removed. Provides the index of the removed page.</p>
+
+		<div class="code-block">
+chunker.on('pageRemoved', (index) => {
+	console.log(`Page removed at index ${index}`);
+});
+		</div>
+	</div>
+
+	<div id="chapter-4" class="chapter">
+		<h2 class="chapter-header">4. Best Practices</h2>
+
+		<h3 class="section-header" id="section-4-1">4.1 Insert Pages Before Rendering</h3>
+
+		<p>For best performance, insert pages before the main content rendering begins. This avoids re-layout operations.</p>
+
+		<h3 class="section-header" id="section-4-2">4.2 Use Named Pages</h3>
+
+		<p>Use the <code>name</code> option to apply specific <code>@page</code> CSS rules to inserted pages. This allows different headers, footers, and margins for different page types.</p>
+
+		<h3 class="section-header" id="section-4-3">4.3 Handle Page Numbering</h3>
+
+		<p>Use <code>pageNumberOverride</code> to control page numbering. For example, set cover pages to not count towards the page number, or start numbering from a specific value.</p>
+
+		<h3 class="section-header" id="section-4-4">4.4 Content Injection</h3>
+
+		<p>When injecting HTML content, ensure it is well-formed and does not contain elements that might conflict with the page template structure.</p>
+	</div>
+
+	<div id="chapter-5" class="chapter">
+		<h2 class="chapter-header">5. Conclusion</h2>
+
+		<p>The Page Insertion API transforms PaperView from a simple content paginator into a full-featured document layout engine. By combining page insertion with other CSS Paged Media features like leaders, page floats, footnotes, and generated content, you can create professional-quality publications entirely from web technologies.</p>
+
+		<p>Key takeaways: Use <code>insertPage()</code> for precise control over page positioning. Use <code>prependPage()</code> and <code>appendPage()</code> for common insertion patterns. Use <code>removePage()</code> and <code>replacePage()</code> for dynamic content updates. Listen to events for custom behavior and logging. Combine with named pages for different layouts per page type.</p>
+	</div>
+</body>
+</html>

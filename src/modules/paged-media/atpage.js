@@ -23,6 +23,8 @@ class AtPage extends Handler {
 			name: undefined,
 			psuedo: undefined,
 			nth: undefined,
+			has: undefined,
+			is: undefined,
 			marginalia: {},
 			width: undefined,
 			height: undefined,
@@ -42,13 +44,15 @@ class AtPage extends Handler {
 	onAtPage(node, item, list) {
 		let page, marginalia;
 		let selector = "";
-		let named, psuedo, nth;
+		let named, psuedo, nth, hasSelector, isSelector;
 		let needsMerge = false;
 
 		if (node.prelude) {
 			named = this.getTypeSelector(node);
 			psuedo = this.getPsuedoSelector(node);
 			nth = this.getNthSelector(node);
+			hasSelector = this.getHasSelector(node);
+			isSelector = this.getIsSelector(node);
 			selector = csstree.generate(node.prelude);
 		} else {
 			selector = "*";
@@ -71,6 +75,8 @@ class AtPage extends Handler {
 		page.name = named;
 		page.psuedo = psuedo;
 		page.nth = nth;
+		page.has = hasSelector;
+		page.is = isSelector;
 
 		if (needsMerge) {
 			page.marginalia = Object.assign(page.marginalia, marginalia);
@@ -242,6 +248,47 @@ class AtPage extends Handler {
 		});
 
 		return nth;
+	}
+
+	getHasSelector(ast) {
+		// Find :has() selector - e.g., @page:has(h1), @page:has(img.figure)
+		let hasSelector;
+		csstree.walk(ast, {
+			visit: "PseudoClassSelector",
+			enter: (node, item, list) => {
+				if (node.name === "has" && node.children) {
+					// node.children is a SelectorList, get the first Selector
+					let firstSelector = node.children.first;
+					if (firstSelector) {
+						hasSelector = csstree.generate(firstSelector);
+					}
+				}
+			}
+		});
+		return hasSelector;
+	}
+
+	getIsSelector(ast) {
+		// Find :is() selector - e.g., @page:is(:first, :blank)
+		let isSelectors = [];
+		csstree.walk(ast, {
+			visit: "PseudoClassSelector",
+			enter: (node, item, list) => {
+				if (node.name === "is" && node.children) {
+					// Walk through the SelectorList inside :is()
+					csstree.walk(node, {
+						visit: "PseudoClassSelector",
+						enter: (pseudoNode) => {
+							// Skip the outer :is() itself
+							if (pseudoNode.name !== "is") {
+								isSelectors.push(pseudoNode.name);
+							}
+						}
+					});
+				}
+			}
+		});
+		return isSelectors.length > 0 ? isSelectors : undefined;
 	}
 
 	replaceMarginalia(ast) {
@@ -483,6 +530,24 @@ class AtPage extends Handler {
 			}
 		}
 
+		// Add :has() pages
+		for (let pg in pages) {
+			if (pages[pg].has && !pages[pg].added) {
+				let hasRule = this.createPageWithHas(pages[pg], ast.children, sheet);
+				sheet.insertRule(hasRule);
+				pages[pg].added = true;
+			}
+		}
+
+		// Add :is() pages
+		for (let pg in pages) {
+			if (pages[pg].is && !pages[pg].added) {
+				let isRules = this.createPageWithIs(pages[pg], ast.children, sheet);
+				isRules.forEach((rule) => sheet.insertRule(rule));
+				pages[pg].added = true;
+			}
+		}
+
 		// Add named pages
 		for (let pg in pages) {
 			if (pages[pg].name && !pages[pg].added) {
@@ -517,6 +582,72 @@ class AtPage extends Handler {
 		}
 
 		return rule;
+	}
+
+	/**
+	 * Create CSS rule for @page:has() selector
+	 * Uses dynamically generated class based on the :has() selector
+	 */
+	createPageWithHas(page, ruleList, sheet) {
+		let selectors = this.selectorsForPageWithHas(page);
+		let children = page.block.children.copy();
+		let block = {
+			type: "Block",
+			loc: 0,
+			children: children
+		};
+		let rule = this.createRule(selectors, block);
+
+		this.addMarginVars(page.margin, children, children.first);
+
+		if (page.width) {
+			this.addDimensions(page.width, page.height, page.orientation, children, children.first);
+		}
+
+		if (page.marginalia) {
+			this.addMarginaliaStyles(page, ruleList, rule, sheet);
+			this.addMarginaliaContent(page, ruleList, rule, sheet);
+		}
+
+		return rule;
+	}
+
+	/**
+	 * Create CSS rules for @page:is() selector
+	 * Generates separate rules for each selector in :is()
+	 */
+	createPageWithIs(page, ruleList, sheet) {
+		let rules = [];
+
+		if (!page.is || page.is.length === 0) {
+			return rules;
+		}
+
+		page.is.forEach((isSelector) => {
+			let selectors = this.selectorsForPageWithIs(page, isSelector);
+			let children = page.block.children.copy();
+			let block = {
+				type: "Block",
+				loc: 0,
+				children: children
+			};
+			let rule = this.createRule(selectors, block);
+
+			this.addMarginVars(page.margin, children, children.first);
+
+			if (page.width) {
+				this.addDimensions(page.width, page.height, page.orientation, children, children.first);
+			}
+
+			if (page.marginalia) {
+				this.addMarginaliaStyles(page, ruleList, rule, sheet);
+				this.addMarginaliaContent(page, ruleList, rule, sheet);
+			}
+
+			rules.push(rule);
+		});
+
+		return rules;
 	}
 
 	addMarginVars(margin, list, item) {
@@ -1088,6 +1219,9 @@ class AtPage extends Handler {
 	}
 
 	afterPageLayout(fragment, page, breakToken, chunker) {
+		// Check :has() selectors and apply matching classes
+		this.applyHasSelectors(page, chunker);
+
 		for (let m in this.marginalia) {
 			let margin = this.marginalia[m];
 			let sels = m.split(" ");
@@ -1330,6 +1464,79 @@ class AtPage extends Handler {
 
 	}
 
+	/**
+	 * Apply :has() selector matching to pages
+	 * Checks if page content contains elements matching :has() selectors
+	 * and applies appropriate CSS classes
+	 */
+	applyHasSelectors(page, chunker) {
+		// Collect all :has() selectors from pages
+		let hasPages = [];
+		for (let sel in this.pages) {
+			let pg = this.pages[sel];
+			if (pg.has) {
+				hasPages.push(pg);
+			}
+		}
+
+		if (hasPages.length === 0) {
+			return;
+		}
+
+		// Get page content area
+		let contentArea = page.element.querySelector(".pagedjs_page_content");
+		if (!contentArea) {
+			return;
+		}
+
+		// Check each :has() selector against page content
+		hasPages.forEach((pg) => {
+			try {
+				// Check if page content matches the :has() selector
+				if (contentArea.matches(`:has(${pg.has})`)) {
+					// Generate a unique class for this :has() match
+					let hasClass = this.getHasClassName(pg.selector, pg.has);
+					page.element.classList.add(hasClass);
+
+					// Store matched selector info
+					if (!page.hasMatches) {
+						page.hasMatches = [];
+					}
+					page.hasMatches.push({
+						selector: pg.selector,
+						hasSelector: pg.has,
+						className: hasClass
+					});
+				}
+			} catch (e) {
+				// :has() not supported in this browser, fallback to querySelector
+				if (contentArea.querySelector(pg.has)) {
+					let hasClass = this.getHasClassName(pg.selector, pg.has);
+					page.element.classList.add(hasClass);
+
+					if (!page.hasMatches) {
+						page.hasMatches = [];
+					}
+					page.hasMatches.push({
+						selector: pg.selector,
+						hasSelector: pg.has,
+						className: hasClass
+					});
+				}
+			}
+		});
+	}
+
+	/**
+	 * Generate a CSS class name for a :has() match
+	 */
+	getHasClassName(pageSelector, hasSelector) {
+		// Sanitize selector for class name
+		let safeHas = hasSelector.replace(/[^a-zA-Z0-9_-]/g, "_");
+		let safePage = pageSelector.replace(/[^a-zA-Z0-9_-]/g, "_") || "page";
+		return `pagedjs_has_${safePage}_${safeHas}`;
+	}
+
 	// CSS Tree Helpers
 
 	selectorsForPage(page) {
@@ -1383,6 +1590,80 @@ class AtPage extends Handler {
 				name: "nth-of-type",
 				children: nthlist
 			});
+		}
+
+		return selectors;
+	}
+
+	/**
+	 * Generate selectors for @page:has() rules
+	 * Creates class selector based on the :has() match
+	 */
+	selectorsForPageWithHas(page) {
+		let selectors = this.selectorsForPage(page);
+
+		if (page.has) {
+			let hasClass = this.getHasClassName(page.selector, page.has);
+			selectors.insertData({
+				type: "ClassSelector",
+				name: hasClass
+			});
+		}
+
+		return selectors;
+	}
+
+	/**
+	 * Generate selectors for @page:is() rules
+	 * Creates selectors matching each option in :is()
+	 */
+	selectorsForPageWithIs(page, isSelector) {
+		let selectors = new csstree.List();
+
+		selectors.insertData({
+			type: "ClassSelector",
+			name: "pagedjs_page"
+		});
+
+		// Map :is() selectors to their corresponding page classes
+		let classMapping = {
+			"first": "pagedjs_first_page",
+			"left": "pagedjs_left_page",
+			"right": "pagedjs_right_page",
+			"blank": "pagedjs_blank_page"
+		};
+
+		// Handle named pages in :is()
+		if (page.name) {
+			selectors.insertData({
+				type: "ClassSelector",
+				name: "pagedjs_named_page"
+			});
+			selectors.insertData({
+				type: "ClassSelector",
+				name: "pagedjs_" + page.name + "_page"
+			});
+		}
+
+		// Add class for the :is() selector
+		if (classMapping[isSelector]) {
+			selectors.insertData({
+				type: "ClassSelector",
+				name: classMapping[isSelector]
+			});
+		} else if (isSelector.startsWith("nth")) {
+			// Handle :nth() in :is()
+			let nthValue = isSelector.replace(/^nth\((.*)\)$/, "$1");
+			if (nthValue !== isSelector) {
+				let nthlist = new csstree.List();
+				let nth = this.getNth(nthValue);
+				nthlist.insertData(nth);
+				selectors.insertData({
+					type: "PseudoClassSelector",
+					name: "nth-of-type",
+					children: nthlist
+				});
+			}
 		}
 
 		return selectors;

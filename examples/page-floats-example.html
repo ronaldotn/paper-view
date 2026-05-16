@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>PaperView - Page Floats Example</title>
+	<style>
+		@page {
+			size: A4;
+			margin: 2cm;
+
+			@top-center {
+				content: "Page Floats Demo";
+				font-size: 9pt;
+				color: #666;
+			}
+
+			@bottom-center {
+				content: counter(page);
+				font-size: 10pt;
+			}
+		}
+
+		body {
+			font-family: "Georgia", serif;
+			line-height: 1.6;
+			color: #333;
+			max-width: 100%;
+		}
+
+		h1 {
+			font-size: 24pt;
+			margin-bottom: 24pt;
+			color: #1a1a1a;
+			border-bottom: 2px solid #333;
+			padding-bottom: 12pt;
+		}
+
+		h2 {
+			font-size: 16pt;
+			margin-top: 18pt;
+			margin-bottom: 12pt;
+			color: #2c3e50;
+		}
+
+		p {
+			margin-bottom: 12pt;
+			text-align: justify;
+		}
+
+		/* Float: top - figures at top of page */
+		figure.float-top {
+			float: top;
+			margin: 0 0 12pt 0;
+			padding: 12pt;
+			background: #f8f9fa;
+			border: 1px solid #dee2e6;
+			border-radius: 4px;
+		}
+
+		figure.float-top img {
+			width: 100%;
+			height: auto;
+			display: block;
+			margin-bottom: 8pt;
+		}
+
+		figure.float-top figcaption {
+			font-size: 9pt;
+			color: #666;
+			font-style: italic;
+		}
+
+		/* Float: bottom - tables at bottom of page */
+		table.float-bottom {
+			float: bottom;
+			width: 100%;
+			border-collapse: collapse;
+			margin: 12pt 0 0 0;
+			font-size: 10pt;
+		}
+
+		table.float-bottom th,
+		table.float-bottom td {
+			border: 1px solid #dee2e6;
+			padding: 6pt 8pt;
+			text-align: left;
+		}
+
+		table.float-bottom th {
+			background: #f8f9fa;
+			font-weight: bold;
+		}
+
+		table.float-bottom caption {
+			font-size: 9pt;
+			color: #666;
+			font-style: italic;
+			margin-bottom: 6pt;
+			text-align: left;
+		}
+
+		/* Float: page - full page figure */
+		figure.float-page {
+			float: page;
+			text-align: center;
+			padding: 24pt;
+		}
+
+		figure.float-page img {
+			max-width: 80%;
+			height: auto;
+		}
+
+		figure.float-page figcaption {
+			font-size: 11pt;
+			color: #555;
+			margin-top: 12pt;
+		}
+
+		/* Float: here - inline float */
+		figure.float-here {
+			float: here;
+			margin: 12pt 0;
+			padding: 12pt;
+			background: #fff3cd;
+			border: 1px solid #ffc107;
+			border-radius: 4px;
+		}
+
+		figure.float-here figcaption {
+			font-size: 9pt;
+			color: #856404;
+			margin-top: 6pt;
+		}
+
+		/* Float-defer example */
+		figure.float-deferred {
+			float: top;
+			float-defer: 1;
+			margin: 0 0 12pt 0;
+			padding: 12pt;
+			background: #e7f3ff;
+			border: 1px solid #b3d9ff;
+		}
+
+		/* Clear example */
+		figure.float-cleared {
+			float: top;
+			clear: page-top;
+			margin: 0 0 12pt 0;
+			padding: 12pt;
+			background: #f0f0f0;
+			border-top: 2px solid #999;
+		}
+
+		.placeholder-img {
+			width: 100%;
+			height: 150px;
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			color: white;
+			font-size: 14pt;
+			border-radius: 4px;
+		}
+
+		.placeholder-img.wide {
+			height: 200px;
+			background: linear-gradient(135deg, #f093fb 0%, #f5576d 100%);
+		}
+
+		.placeholder-img.tall {
+			height: 300px;
+			background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+		}
+	</style>
+</head>
+<body>
+	<h1>Page Floats in Paged Media</h1>
+
+	<p>This example demonstrates CSS page floats for positioning figures, tables, and other block elements in specific areas of the page. Page floats are essential for professional document layout, allowing content to be placed at the top, bottom, or across entire pages.</p>
+
+	<h2>Float: Top</h2>
+	<p>Figures with <code>float: top</code> are positioned at the top of the page, before the main content flow. This is commonly used for figures and images that should appear above the text.</p>
+
+	<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+
+	<figure class="float-top">
+		<div class="placeholder-img">Figure 1: Float Top Example</div>
+		<figcaption>Figure 1: This figure is positioned at the top of the page using <code>float: top</code>.</figcaption>
+	</figure>
+
+	<p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit.</p>
+
+	<h2>Float: Bottom</h2>
+	<p>Tables with <code>float: bottom</code> are positioned at the bottom of the page, after the main content. This is ideal for data tables that should not interrupt the reading flow.</p>
+
+	<p>At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga.</p>
+
+	<table class="float-bottom">
+		<caption>Table 1: Data positioned at the bottom of the page</caption>
+		<thead>
+			<tr>
+				<th>Property</th>
+				<th>Value</th>
+				<th>Description</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>float</td>
+				<td>bottom</td>
+				<td>Positions element at page bottom</td>
+			</tr>
+			<tr>
+				<td>float-defer</td>
+				<td>integer</td>
+				<td>Defers float placement by N pages</td>
+			</tr>
+			<tr>
+				<td>clear</td>
+				<td>page-top</td>
+				<td>Clears floats from previous pages</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<p>Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus.</p>
+
+	<h2>Float: Page</h2>
+	<p>Elements with <code>float: page</code> occupy the entire page, centered and prominent. This is perfect for full-page figures, charts, or important visual content.</p>
+
+	<p>Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus, ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat.</p>
+
+	<figure class="float-page">
+		<div class="placeholder-img tall">Full Page Figure</div>
+		<figcaption>Figure 2: This figure occupies the entire page using <code>float: page</code>.</figcaption>
+	</figure>
+
+	<h2>Float: Here</h2>
+	<p>Elements with <code>float: here</code> are positioned inline at their reference point, but treated as a page-level float. Useful for callout boxes or important notes.</p>
+
+	<p>Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.</p>
+
+	<figure class="float-here">
+		<strong>Important Note:</strong> This callout box uses <code>float: here</code> to stay at its reference point in the text flow while being treated as a page-level float.
+	</figure>
+
+	<p>Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur?</p>
+
+	<h2>Float-Defer</h2>
+	<p>The <code>float-defer</code> property allows you to defer the placement of a float by a specified number of pages. This is useful when you want a figure to appear on the next page rather than the current one.</p>
+
+	<figure class="float-deferred">
+		<div class="placeholder-img wide">Deferred Figure</div>
+		<figcaption>Figure 3: This figure uses <code>float-defer: 1</code> to defer placement to the next page.</figcaption>
+	</figure>
+
+	<p>Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?</p>
+
+	<h2>Clear</h2>
+	<p>The <code>clear</code> property with values like <code>page-top</code> or <code>page-bottom</code> ensures that floats start on a new page after clearing previous floats.</p>
+
+	<figure class="float-cleared">
+		<div class="placeholder-img">Cleared Figure</div>
+		<figcaption>Figure 4: This figure uses <code>clear: page-top</code> to start on a fresh page.</figcaption>
+	</figure>
+
+	<p>Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>
+
+	<h2>Summary</h2>
+	<p>Page floats provide powerful layout control for paged media:</p>
+	<p><strong>float: top</strong> - Positions elements at the top of the page, ideal for figures.</p>
+	<p><strong>float: bottom</strong> - Positions elements at the bottom of the page, ideal for tables.</p>
+	<p><strong>float: page</strong> - Occupies the entire page for full-page content.</p>
+	<p><strong>float: here</strong> - Keeps elements at their reference point as page floats.</p>
+	<p><strong>float-defer</strong> - Defers float placement by N pages.</p>
+	<p><strong>clear: page-top|page-bottom</strong> - Clears floats from previous pages.</p>
+
+	<p>These properties work together to create professional, publication-quality layouts with precise control over element positioning.</p>
+</body>
+</html>

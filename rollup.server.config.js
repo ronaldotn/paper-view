@@ -2,6 +2,7 @@ import babel from '@rollup/plugin-babel';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
+import typescript from '@rollup/plugin-typescript';
 
 import pkg from './package.json' with { type: 'json' };
 
@@ -9,10 +10,18 @@ import serve from 'rollup-plugin-serve';
 
 const plugins = [
     resolve({
-        browser: true
+        browser: true,
+        extensions: ['.js', '.ts']
     }),
     commonjs(),
     json(),
+    typescript({
+        tsconfig: './tsconfig.json',
+        declaration: false,
+        sourceMap: false,
+        include: ['src/**/*.ts', 'src/**/*.js'],
+        exclude: 'node_modules/**'
+    }),
     // globals(),
     // builtins(),
     serve({
@@ -25,6 +34,7 @@ const plugins = [
     }),
     babel({
         exclude: 'node_modules/**',
+        extensions: ['.js', '.ts'],
         babelHelpers: 'runtime',
         presets: [
             [
