@@ -96,11 +96,13 @@ export function parseOffset(offset: string): string {
 		return "0";
 	}
 
+	// eslint-disable-next-line security/detect-unsafe-regex
 	const validPattern = /^(\d+(\.\d+)?)(px|em|rem|%|vh|vw|vmin|vmax|cm|mm|in|pt|pc)$/i;
 	if (validPattern.test(offset.trim())) {
 		return offset.trim();
 	}
 
+	// eslint-disable-next-line security/detect-unsafe-regex
 	const numPattern = /^\d+(\.\d+)?$/;
 	if (numPattern.test(offset.trim())) {
 		return `${offset.trim()}px`;

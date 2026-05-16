@@ -84,6 +84,12 @@ class NodePDFExporter {
 		}
 	}
 
+	/**
+	 * @warning SSRF RISK: Only call this method with trusted, validated URLs.
+	 * If the URL is user-controlled, an attacker could make the server
+	 * navigate to internal network resources (cloud metadata, localhost services).
+	 * Validate against an allowlist and block private IP ranges before calling.
+	 */
 	static async fromURL(url: string, options: PDFOptions = {}): Promise<Buffer> {
 		const puppeteer = require("puppeteer");
 
@@ -150,9 +156,11 @@ class NodePDFExporter {
 		for (const item of css) {
 			if (typeof item === "string") {
 				if (item.startsWith("http") || item.startsWith("/")) {
-					styles += `<link rel="stylesheet" href="${item}">`;
+					const safeHref = item.replace(/"/g, "&quot;");
+					styles += `<link rel="stylesheet" href="${safeHref}">`;
 				} else {
-					styles += `<style>${item}</style>`;
+					const safeStyle = item.replace(/<\/style>/gi, "<\\/style>");
+					styles += `<style>${safeStyle}</style>`;
 				}
 			}
 		}

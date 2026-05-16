@@ -96,10 +96,10 @@ export function elementAfter(node: Node, limiter?: Node | null): Element | null 
 }
 
 export function elementBefore(node: Node, limiter?: Node | null): Element | null | undefined {
-	let before = nodeAfter(node, limiter);
+	let before = nodeBefore(node, limiter);
 
 	while (before && before.nodeType !== 1) {
-		before = nodeAfter(before, limiter);
+		before = nodeBefore(before, limiter);
 	}
 
 	return before as Element | null | undefined;
@@ -356,7 +356,9 @@ export function findElement(node: Element, doc: Document): HTMLElement | null {
 }
 
 export function findRef(ref: string | null, doc: Document): HTMLElement | null {
-	return doc.querySelector(`[data-ref='${ref}']`);
+	if (!ref) return null;
+	const safeRef = ref.replace(/'/g, "\\'");
+	return doc.querySelector(`[data-ref='${safeRef}']`);
 }
 
 export function validNode(node: Node): boolean {

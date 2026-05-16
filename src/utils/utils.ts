@@ -170,10 +170,14 @@ export function defer(this: any): void {
 	this.resolve = null;
 	this.reject = null;
 	this.id = UUID();
-	this.promise = new Promise((resolve: (value: any) => void, reject: (reason?: any) => void) => {
-		this.resolve = resolve;
-		this.reject = reject;
-	});
+	try {
+		this.promise = new Promise((resolve: (value: any) => void, reject: (reason?: any) => void) => {
+			this.resolve = resolve;
+			this.reject = reject;
+		});
+	} catch (e) {
+		console.warn("defer: failed to create promise:", e);
+	}
 	Object.freeze(this);
 }
 

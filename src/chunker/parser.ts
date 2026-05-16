@@ -13,7 +13,7 @@ class ContentParser {
 				this.dom = this.parse(content);
 			}
 		} catch (e) {
-			// Ignore parse errors
+			console.warn("ContentParser: parse error:", e);
 		}
 		return this.dom;
 	}
@@ -103,7 +103,7 @@ class ContentParser {
 	}
 
 	isText(node: Node): boolean {
-		return (node as Element).tagName === "TAG";
+		return node.nodeType === 3;
 	}
 
 	isElement(node: Node): boolean {

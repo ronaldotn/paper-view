@@ -691,7 +691,7 @@ class Layout {
 							let lastWord = lastWordMatch[1];
 							let hyphenatedWord = ""; // placeholder - would need hyphenator import
 
-							if (hyphenatedWord !== lastWord) {
+							if (hyphenatedWord && hyphenatedWord !== lastWord) {
 								let wordStartIndex = lastWordMatch.index!;
 								let beforeWord = startText.substring(0, wordStartIndex);
 								startContainer.textContent = beforeWord + hyphenatedWord;

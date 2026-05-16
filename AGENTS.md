@@ -51,9 +51,10 @@ dist/                   # Built bundles (UMD, ESM, polyfill)
 
 ## Linting
 
-- ESLint 8 with `eslint:recommended` + `security` plugin
+- ESLint 8 with `eslint:recommended` + `eslint-plugin-security`
 - Tab indentation, double quotes
-- Security rules enforced in CI
+- Security rules: `detect-eval-with-expression`, `detect-non-literal-regexp`, `detect-unsafe-regex`, `detect-object-injection`, and more
+- Run with `npm run lint` (enforced in CI)
 
 ## CI/CD
 

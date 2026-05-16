@@ -11,7 +11,7 @@ module.exports = {
 		sourceType: "module",
 		ecmaVersion: 9
 	},
-	plugins: ["@typescript-eslint"],
+	plugins: ["@typescript-eslint", "security"],
 	extends: [
 		"eslint:recommended"
 	],
@@ -39,6 +39,15 @@ module.exports = {
 			"warn",
 			{ vars: "all", args: "none", ignoreRestSiblings: true }
 		],
+		"security/detect-possible-timing-attacks": "warn",
+		"security/detect-eval-with-expression": "error",
+		"security/detect-no-csrf-before-method-override": "warn",
+		"security/detect-non-literal-fs-filename": "warn",
+		"security/detect-non-literal-regexp": "warn",
+		"security/detect-non-literal-require": "warn",
+		"security/detect-object-injection": "warn",
+		"security/detect-pseudoRandomBytes": "warn",
+		"security/detect-unsafe-regex": "warn",
 		"no-mixed-spaces-and-tabs": ["error", "smart-tabs"],
 		"no-undef": "off",
 		"no-redeclare": "off",

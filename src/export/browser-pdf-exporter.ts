@@ -125,18 +125,22 @@ class BrowserPDFExporter {
 		});
 
 		document.querySelectorAll("link[rel=\"stylesheet\"]").forEach(link => {
-			styles += link.outerHTML;
+			const href = link.getAttribute("href");
+			if (href) {
+				styles += `<link rel="stylesheet" href="${href.replace(/"/g, "&quot;")}">`;
+			}
 		});
 
 		const width = size.width ? `${size.width.value}${size.width.unit}` : "8.5in";
 		const height = size.height ? `${size.height.value}${size.height.unit}` : "11in";
+		const safeTitle = document.title.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 		return `
 			<!DOCTYPE html>
 			<html>
 			<head>
 				<meta charset="utf-8">
-				<title>${document.title}</title>
+				<title>${safeTitle}</title>
 				${styles}
 				<style>
 					@page {
