@@ -233,9 +233,11 @@ class Chunker {
 		await this.loadFonts();
 
 		let rendered: { done: boolean; canceled: boolean } = await this.render(parsed, this.breakToken);
-		while (rendered.canceled) {
+		let retries = 0;
+		while (rendered.canceled && retries < 10) {
 			this.start();
 			rendered = await this.render(parsed, this.breakToken);
+			retries++;
 		}
 
 		if (this.oversetPages().length > 0) {
@@ -563,7 +565,7 @@ class Chunker {
 				breakToken = await page.layout(content, breakToken || undefined, this.maxChars!);
 				await this.hooks.afterPageLayout.trigger(page.element, page, breakToken, this);
 				this.emit("renderedPage", page);
-				this.recoredCharLength(page.wrapper!.textContent!.length);
+				this.recordCharLength(page.wrapper!.textContent!.length);
 				yield breakToken || undefined;
 			}
 			return;
@@ -592,7 +594,7 @@ class Chunker {
 
 			await this.hooks.afterPageLayout.trigger(page.element, page, breakToken, this);
 			this.emit("renderedPage", page);
-			this.recoredCharLength(page.wrapper!.textContent!.length);
+			this.recordCharLength(page.wrapper!.textContent!.length);
 
 			pageCount++;
 			yield breakToken || undefined;
@@ -629,18 +631,22 @@ class Chunker {
 		return serialize(content);
 	}
 
-	recoredCharLength(length: number): void {
-		if (length === 0) {
+	recordCharLength(cumulativeLength: number): void {
+		if (cumulativeLength === 0) {
 			return;
 		}
 
-		this.charsPerBreak.push(length);
+		let prevTotal = this.charsPerBreak.reduce((a, b) => a + b, 0);
+		let pageLength = cumulativeLength - prevTotal;
+		if (pageLength <= 0) pageLength = cumulativeLength;
+
+		this.charsPerBreak.push(pageLength);
 
 		if (this.charsPerBreak.length > 4) {
 			this.charsPerBreak.shift();
 		}
 
-		this.maxChars = this.charsPerBreak.reduce((a, b) => a + b, 0) / (this.charsPerBreak.length);
+		this.maxChars = Math.round(this.charsPerBreak.reduce((a, b) => a + b, 0) / this.charsPerBreak.length);
 	}
 
 	removePages(fromIndex: number = 0): void {

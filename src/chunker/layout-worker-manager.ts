@@ -116,7 +116,7 @@ class LayoutWorkerManager {
 					if (type === "WORKER_READY" || type === "INITIALIZED") {
 						clearTimeout(initTimeout);
 						this.readyWorkers++;
-						if (this.readyWorkers === this.workerCount) {
+						if (this.readyWorkers === this.workerCount && !this.initialized) {
 							this.initialized = true;
 							this.emit("ready", { workerCount: this.workerCount });
 						}

@@ -1368,24 +1368,24 @@ class AtPage extends Handler {
 					}else if(topContent){
 						if(!bottomContent){
 							if(topHeight !== "none" && topHeight !== "auto"){
-								marginGroup.style["grid-template-rows"] = topHeight + " calc(100% - " + topHeight + "*2) " + topHeight;
+								marginGroup.style["grid-template-rows"] = topHeight + " calc(100% - (" + topHeight + " * 2)) " + topHeight;
 							}
 						}else{
 							if(topHeight !== "none" && topHeight !== "auto"){
 								if(bottomHeight !== "none" && bottomHeight !== "auto"){
 									marginGroup.style["grid-template-rows"] = topHeight + " calc(100% - " + topHeight + " - " + bottomHeight + ") " + bottomHeight;
 								}else{
-									marginGroup.style["grid-template-rows"] = topHeight + " calc(100% - " + topHeight + "*2) " + topHeight;
+									marginGroup.style["grid-template-rows"] = topHeight + " calc(100% - (" + topHeight + " * 2)) " + topHeight;
 								}
 							}else{
 								if(bottomHeight !== "none" && bottomHeight !== "auto"){
-									marginGroup.style["grid-template-rows"] = bottomHeight + " calc(100% - " + bottomHeight + "*2) " + bottomHeight;
+									marginGroup.style["grid-template-rows"] = bottomHeight + " calc(100% - (" + bottomHeight + " * 2)) " + bottomHeight;
 								}
 							}
 						}
 					}else{
 						if(bottomHeight !== "none" && bottomHeight !== "auto"){
-							marginGroup.style["grid-template-rows"] = bottomHeight + " calc(100% - " + bottomHeight + "*2) " + bottomHeight;
+							marginGroup.style["grid-template-rows"] = bottomHeight + " calc(100% - (" + bottomHeight + " * 2)) " + bottomHeight;
 						}
 					}
 				}else{

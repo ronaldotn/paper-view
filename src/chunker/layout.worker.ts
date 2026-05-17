@@ -30,6 +30,9 @@ interface SerializedNode {
 interface TempTextNode {
 	nodeType: number;
 	textContent: string;
+	parentNode: TempElementNode | null;
+	nextSibling: TempTextNode | TempElementNode | null;
+	previousSibling: TempTextNode | TempElementNode | null;
 }
 
 interface TempElementNode {
@@ -38,6 +41,9 @@ interface TempElementNode {
 	dataset: Record<string, string>;
 	childNodes: (TempTextNode | TempElementNode)[];
 	children: (TempTextNode | TempElementNode)[];
+	parentNode: TempElementNode | null;
+	nextSibling: TempTextNode | TempElementNode | null;
+	previousSibling: TempTextNode | TempElementNode | null;
 	appendChild: (child: TempTextNode | TempElementNode) => void;
 }
 
@@ -237,11 +243,18 @@ function calculateLayout(task: LayoutTask): LayoutResult {
 	}
 
 	const tempDoc: TempDoc = {
-		createTextNode: (text: string) => ({ nodeType: 3, textContent: text }),
+		createTextNode: (text: string) => ({ nodeType: 3, textContent: text, parentNode: null, nextSibling: null, previousSibling: null }),
 		createElement: (tag: string) => {
-			const el: TempElementNode = { nodeType: 1, tagName: tag, dataset: {}, childNodes: [], children: [] };
+			const el: TempElementNode = { nodeType: 1, tagName: tag, dataset: {}, childNodes: [], children: [], parentNode: null, nextSibling: null, previousSibling: null };
 			el.appendChild = function(child: TempTextNode | TempElementNode) {
+				child.parentNode = this;
+				const last = this.childNodes[this.childNodes.length - 1] || null;
+				if (last) {
+					last.nextSibling = child;
+					child.previousSibling = last;
+				}
 				this.childNodes.push(child);
+				this.children.push(child);
 			};
 			return el;
 		}

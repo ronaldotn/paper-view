@@ -2,6 +2,7 @@ import {
 	getBoundingClientRect,
 	getClientRects
 } from "../utils/utils";
+import hyphenator from "../utils/hyphenator";
 import {
 	walk,
 	nodeAfter,
@@ -461,11 +462,7 @@ class Layout {
 				}
 
 				if (skip || right < end) {
-					let nextNode = nodeAfter(node, rendered);
-					if (nextNode) {
-						walker = walk(nextNode, rendered);
-					}
-
+					continue;
 				}
 
 			}
@@ -605,7 +602,17 @@ class Layout {
 			return null;
 		}
 
-		let hyphenPoints: number[] = []; // placeholder - would need hyphenator import
+		let hyphenated = hyphenator.hyphenate(cleanWord, lang, { minWordLength: 5, minCharsBefore: 2, minCharsAfter: 2 });
+		let hyphenPoints: number[] = [];
+		let pos = 0;
+		for (let i = 0; i < hyphenated.length; i++) {
+			if (hyphenated[i] === "\u00AD") {
+				hyphenPoints.push(pos);
+			} else {
+				pos++;
+			}
+		}
+
 		let letterwalker = letters(wordRange);
 		let letter: Range | undefined, nextLetter: IteratorResult<Range, void>, doneLetter: boolean | undefined;
 		let charIndex = 0;
@@ -689,9 +696,9 @@ class Layout {
 						let lastWordMatch = startText.match(/([\w\u00C0-\u024F]+)[\s\u00AD]*$/);
 						if (lastWordMatch && lastWordMatch[1].length >= options.minWordLength) {
 							let lastWord = lastWordMatch[1];
-							let hyphenatedWord = ""; // placeholder - would need hyphenator import
+							let hyphenatedWord = hyphenator.hyphenate(lastWord, lang, options);
 
-							if (hyphenatedWord && hyphenatedWord !== lastWord) {
+							if (hyphenatedWord !== lastWord) {
 								let wordStartIndex = lastWordMatch.index!;
 								let beforeWord = startText.substring(0, wordStartIndex);
 								startContainer.textContent = beforeWord + hyphenatedWord;

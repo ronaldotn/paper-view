@@ -357,7 +357,7 @@ export function findElement(node: Element, doc: Document): HTMLElement | null {
 
 export function findRef(ref: string | null, doc: Document): HTMLElement | null {
 	if (!ref) return null;
-	const safeRef = ref.replace(/'/g, "\\'");
+	const safeRef = ref.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
 	return doc.querySelector(`[data-ref='${safeRef}']`);
 }
 
